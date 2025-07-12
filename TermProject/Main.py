@@ -1,8 +1,11 @@
 from cmu_graphics import *
 import Helper
 import PlrHandler
+import SpriteAnimations
 import copy
 import random
+
+#pip install pillow
 
 SCREEN_WIDTH, SCREEN_HEIGHT = Helper.grabScreenDimensions()
 
@@ -23,6 +26,9 @@ def onAppStart(app):
             "width" : SCREEN_WIDTH, 
             "height" : SCREEN_HEIGHT
         },
+
+        "spriteAnimations": SpriteAnimations.loadAnimations("TermProject/SpriteAnimations")
+
 
     }
 
