@@ -5,19 +5,41 @@ import random
 
 SCREEN_WIDTH, SCREEN_HEIGHT = Helper.grabScreenDimensions()
 
+def applySettings(app):
+
+    if app.playerSettings["fullScreenEnabled"]:
+        app.width = SCREEN_WIDTH
+        app.height = SCREEN_HEIGHT
+    
+    app.stepsPerSecond = app.playerSettings["fps"]
+
+    pass
+
 def onAppStart(app):
 
-    app.settings = {
-        ["screenDimensions"] : {
-            "width" : app.width, 
-            "height" : app.height
+    app.staticInfo = {
+        "fullScreenDimensions" : {
+            "width" : SCREEN_WIDTH, 
+            "height" : SCREEN_HEIGHT
         }
+    }
+
+    app.playerSettings = {
+        "fullScreenEnabled": False,
+        "fps": 60
+    }
+
+    app.playerState = {
+        "position": (None, None)
     }
 
 
     pass
     
 def redrawAll(app):
+
+    drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
+
     pass
 
 #_________________________________________KEY EVENTS____________________________________________
