@@ -1,4 +1,5 @@
 from cmu_graphics import *
+from PIL import Image
 
 
 MOVEMENT_KEY_MAP = {
@@ -12,7 +13,7 @@ def movePlayer(app, keys):
     # will go through all the possible keys and then update the plr position based off of the keys pressed
     speedRatio = (1 / app.stepsPerSecond) * app.playerState["movementSpeed"]
     for key in keys:
-        if MOVEMENT_KEY_MAP[key] != None:
+        if key in MOVEMENT_KEY_MAP:
 
             app.playerState["position"][0] += MOVEMENT_KEY_MAP[key][0] * speedRatio
             app.playerState["position"][1] += MOVEMENT_KEY_MAP[key][1] * speedRatio
@@ -30,10 +31,10 @@ def teleportPlayer(app, newPosition):
 def drawPlayer(app):
     animationInfo = app.playerState["animationInfo"]
     currentAnimationName = animationInfo["currentAnimation"]
-    animationFrames = app.staticInfo["spriteAnimations"]["PlayerAnimations"][currentAnimationName]
+    animationFrames = app.staticInfo["spriteAnimations"][currentAnimationName]
 
 
-    spriteImage = animationFrames[animationInfo["currentFrame"]]
+    spriteImage = CMUImage(animationFrames[animationInfo["currentFrame"]])
 
     drawImage(
         spriteImage,
@@ -44,5 +45,11 @@ def drawPlayer(app):
         height = app.playerState["playerHitboxSize"]["height"]
     )
 
+
+    pass
+
+def updateAnimations(app):
+
+    
 
     pass

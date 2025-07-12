@@ -3,6 +3,7 @@ from cmu_graphics import *
 import Helper
 import PlrHandler
 import SpriteAnimations
+import EntityHandler
 
 import copy
 import random
@@ -30,38 +31,19 @@ def onAppStart(app):
         },
 
         "spriteAnimations": SpriteAnimations.loadAnimations("TermProject/SpriteAnimations")
-
-
     }
 
     app.playerSettings = {
         "fullScreenEnabled": False,
-        "fps": 60,
-
-    }
-
-    app.playerState = {
-        "position": [app.width/2, app.height/2],
-
-        "movementSpeed": 60, # pixels per second
-
-        "playerHitboxSize":{
-            "width": 30,  # pixels
-            "height": 30
-        },
-
-        "animationInfo": {
-            "currentAnimation": "knightidle",
-            "currentFrame":  0,
-            "animationCounter": 0,
-        }
-        
-
+        "fps": 60
     }
 
     app.globalStates = {
         "totalTicks": 0
     }
+
+    app.player = EntityHandler.createEntity("player",app.width/2,app.height/2)
+
 
     applySettings(app)
 
@@ -72,7 +54,7 @@ def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
-    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = None, border = "black")
+    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
     PlrHandler.drawPlayer(app)
     
 
@@ -80,6 +62,10 @@ def redrawAll(app):
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
+
+    animInfo = app.playerState["animationInfo"]
+
+
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
