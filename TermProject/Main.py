@@ -42,7 +42,7 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    app.player = EntityHandler.createEntity("player",app.width/2,app.height/2)
+    app.player = EntityHandler.createEntity(app,"player",app.width/2,app.height/2)
 
 
     applySettings(app)
@@ -54,7 +54,7 @@ def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
-    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
+    drawRect(app.player["position"][0],app.player["position"][1], app.player["playerHitboxSize"]["width"],app.player["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
     PlrHandler.drawPlayer(app)
     
 
@@ -63,7 +63,7 @@ def redrawAll(app):
 def onStep(app):
     app.globalStates["totalTicks"] += 1
 
-    animInfo = app.playerState["animationInfo"]
+    animInfo = app.player["animationInfo"]
 
 
 

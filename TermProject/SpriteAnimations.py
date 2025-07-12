@@ -1,15 +1,27 @@
 import os
 from PIL import Image
 
+settings = {
+    "knightidle": {
+        'loops': True,
+        'priority': True
+    }
+}
+
 
 def loadAnimations(rootFolder):
     """
-    should return sm like this so i dont have to  manually define the images every time :skull:
+    should return sm like this 
     {
-        'idle': [ImageObject1, ImageObject2],
-        'run': [ImageObject3, ImageObject4]
+        'knightidle': {
+            'frames': [ImageObject1, ImageObject2],
+            'priority': 0,
+            'loops': True
+        },
     }
     """
+
+
     animations = {}
 
     for dirPath, dirNames, fileNames in os.walk(rootFolder):

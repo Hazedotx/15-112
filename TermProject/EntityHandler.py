@@ -15,10 +15,13 @@ def InitPlayer(app, xPos, yPos):
             "height": 45
         },
 
+        
+
         "animationInfo": {
             "currentAnimation": "knightidle",
             "currentFrame":  0,
-            "animationCounter": 0,
+            "loop": True,
+            "isPaused": False
         }
     }
 
