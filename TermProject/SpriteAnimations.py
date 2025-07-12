@@ -12,22 +12,21 @@ def loadAnimations(rootFolder):
     """
     animations = {}
 
-    for dirpath, dirnames, filenames in os.walk(rootFolder):
-        filenames.sort()
-        png_files = [f for f in filenames if f.endswith('.png')]
+    for dirPath, dirNames, fileNames in os.walk(rootFolder):
+        fileNames.sort()
+        pngFiles = [f for f in fileNames if f.endswith('.png')]
 
-        if not png_files:
+        if not pngFiles:
             continue
 
-        animation_name = os.path.basename(dirpath).lower()
+        animationName = os.path.basename(dirPath).lower()
         frames = []
-        for filename in png_files:
-            full_path = os.path.join(dirpath, filename)
-            image = Image.open(full_path)
+        for fileName in pngFiles:
+            fullPath = os.path.join(dirPath, fileName)
+            image = Image.open(fullPath)
             frames.append(image)
 
-        animations[animation_name] = frames
-        print(f"Loaded animation '{animation_name}' with {len(frames)} frames.")
+        animations[animationName] = frames
 
     return animations
 
