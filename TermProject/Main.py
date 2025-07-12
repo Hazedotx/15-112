@@ -35,13 +35,17 @@ def onAppStart(app):
     app.playerState = {
         "position": [app.width/2, app.height/2],
 
-        "movementSpeed": 1, # 1pixel step per frame. 60 fps = 60 pixel steps per frame
+        "movementSpeed": 60, # pixels per second
 
         "playerHitboxSize":{
             "width": 30,  # pixels
             "height": 30
         }
 
+    }
+
+    app.globalStates = {
+        "totalTicks": 0
     }
 
     applySettings(app)
@@ -56,6 +60,9 @@ def redrawAll(app):
     drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = "red")
 
     pass
+
+def onStep(app):
+    app.globalStates["totalTicks"] += 1
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
