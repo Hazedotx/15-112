@@ -26,6 +26,21 @@ def teleportPlayer(app, newPosition):
     app.playerState["position"][0] = newPosition[0]
     app.playerState["position"][1] = newPosition[1]
 
-    
+
+def drawPlayer(app):
+    animationInfo = app.playerState["animationInfo"]
+    animationFrames = app.staticInfo["spriteAnimations"]["PlayerAnimations"][animationInfo["currentAnimation"]]
+
+    spriteImage = animationFrames[animationInfo["currentFrame"]]
+
+    drawImage(
+        spriteImage,
+        app.playerState["position"][0],
+        app.playerState["position"][1],
+        align = "center",
+        width = app.playerState["playerHitboxSize"]["width"],
+        height = app.playerState["playerHitboxSize"]["height"]
+    )
+
 
     pass
