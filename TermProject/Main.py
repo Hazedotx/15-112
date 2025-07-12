@@ -72,8 +72,8 @@ def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
-    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = "red")
-
+    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = None, border = "black")
+    PlrHandler.drawPlayer(app)
     
 
     pass
