@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 
+
 def loadAnimations(rootFolder):
     """
     should return sm like this so i dont have to  manually define the images every time :skull:
