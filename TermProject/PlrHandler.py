@@ -4,8 +4,8 @@ from cmu_graphics import *
 MOVEMENT_KEY_MAP = {
     "w": (0, -1),
     "s": (0, 1),
-    "a": (0, -1),
-    "d": (0, 1)
+    "a": (-1, 0),
+    "d": (1, 0)
 }
 
 def movePlayer(app, keys):
