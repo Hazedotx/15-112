@@ -29,7 +29,9 @@ def teleportPlayer(app, newPosition):
 
 def drawPlayer(app):
     animationInfo = app.playerState["animationInfo"]
-    animationFrames = app.staticInfo["spriteAnimations"]["PlayerAnimations"][animationInfo["currentAnimation"]]
+    currentAnimationName = animationInfo["currentAnimation"]
+    animationFrames = app.staticInfo["spriteAnimations"]["PlayerAnimations"][currentAnimationName]
+
 
     spriteImage = animationFrames[animationInfo["currentFrame"]]
 

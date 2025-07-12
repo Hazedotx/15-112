@@ -51,7 +51,7 @@ def onAppStart(app):
         },
 
         "animationInfo": {
-            "currentAnimation": "KnightIdle",
+            "currentAnimation": "knightidle",
             "currentFrame":  0,
             "animationCounter": 0,
         }
