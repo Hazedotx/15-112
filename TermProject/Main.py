@@ -1,5 +1,6 @@
 from cmu_graphics import *
 import Helper
+import PlrHandler
 import copy
 import random
 
@@ -21,17 +22,29 @@ def onAppStart(app):
         "fullScreenDimensions" : {
             "width" : SCREEN_WIDTH, 
             "height" : SCREEN_HEIGHT
-        }
+        },
+
     }
 
     app.playerSettings = {
         "fullScreenEnabled": False,
-        "fps": 60
+        "fps": 60,
+
     }
 
     app.playerState = {
-        "position": (None, None)
+        "position": [app.width/2, app.height/2],
+
+        "movementSpeed": 1, # 1pixel step per frame. 60 fps = 60 pixel steps per frame
+
+        "playerHitboxSize":{
+            "width": 30,  # pixels
+            "height": 30
+        }
+
     }
+
+    applySettings(app)
 
 
     pass
@@ -39,6 +52,8 @@ def onAppStart(app):
 def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
+
+    drawRect(app.playerState["position"][0],app.playerState["position"][1], app.playerState["playerHitboxSize"]["width"],app.playerState["playerHitboxSize"]["height"], fill = "red")
 
     pass
 
@@ -50,6 +65,7 @@ def onKeyRelease(app,key):
     pass
 
 def onKeyHold(app,keys):
+    PlrHandler.movePlayer(app,keys)
     pass
 
 #_________________________________________MOUSE EVENTS____________________________________________
@@ -69,6 +85,6 @@ def onMouseRelease(app, mouseX, mouseY):
 #________________________________________INITALIZE GAME____________________________________________
 
 def main():
-    runApp(width = SCREEN_WIDTH, height = SCREEN_HEIGHT)
+    runApp()
 
 main()
