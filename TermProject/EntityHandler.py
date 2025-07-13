@@ -18,12 +18,14 @@ def InitPlayer(app, xPos, yPos):
         "type": "player",
         "position": [app.width/2, app.height/2],
         "isMoving": False,
+        "keysPressed": set(),
+        "facingDirection": "right",
 
         "movementSpeed": 60, # pixels per second
 
         "playerHitboxSize":{
             "width": 45,  # pixels
-            "height": 45
+            "height": 60
         },
 
         "animationInfo": InitAnimationInfo()

@@ -14,16 +14,14 @@ def movePlayer(app, keys):
     # will go through all the possible keys and then update the plr position based off of the keys pressed
     # will also update the player state "isMoving"
     speedRatio = (1 / app.stepsPerSecond) * app.player["movementSpeed"]
-    moved = False
+
     for key in keys:
         if key in MOVEMENT_KEY_MAP:
-            moved = True
             app.player["position"][0] += MOVEMENT_KEY_MAP[key][0] * speedRatio
             app.player["position"][1] += MOVEMENT_KEY_MAP[key][1] * speedRatio
 
-    app.player["isMoving"] = moved
 
-    pass
+
 
 def teleportPlayer(app, newPosition):
     # will set the players position to a newPosition.
@@ -39,7 +37,7 @@ def drawPlayer(app):
         print(animationFrame)
         return
     
-    spriteImage = CMUImage(animationFrame)
+    spriteImage = CMUImage(animationFrame if app.player["facingDirection"] == "right" else animationFrame.transpose(Image.FLIP_LEFT_RIGHT))
 
     drawImage(
         spriteImage,
@@ -50,9 +48,33 @@ def drawPlayer(app):
         height = app.player["playerHitboxSize"]["height"]
     )
 
-def runStepLogic(app):
+def keyPressedLogic(app, key):
+    app.player["keysPressed"].add(key)
+
+
+def keyReleasedLogic(app, key):
+    app.player["keysPressed"].discard(key)
+
+def keysHeldLogic(app,keys):
+
+    movePlayer(app,keys)
+
+    if "d" in keys:
+        app.player["facingDirection"] = "right"
+    elif "a" in keys:
+        app.player["facingDirection"] = "left"
 
     pass
+
+def movementKeyPressed(app):
+    #checks if any movement keys are being held down so I can tell which animation to run
+    keysPressed = app.player["keysPressed"]
+
+    for key in MOVEMENT_KEY_MAP:
+        if key in keysPressed:
+            return True
+
+    return False
 
 def runPlayerLogic(app, data):
     """
@@ -64,12 +86,17 @@ def runPlayerLogic(app, data):
     #draw functions will not be ran through here. only logic which affects data
     #function will run according to what "data" parameter has in it
 
+    app.player["isMoving"] = movementKeyPressed(app)
+
+
     SpriteAnimations.updateAnimation(app,app.player)
     SpriteAnimations.addAnimToStack(app, app.player, "idle")
 
     if app.player["isMoving"]:
-        #SpriteAnimations.addAnimToStack(app, app.player, "run") jd;fd
-        pass
+        SpriteAnimations.addAnimToStack(app, app.player, "run")
+    else:
+        SpriteAnimations.cancelAnimation(app, app.player, "run")
+
 
 
  

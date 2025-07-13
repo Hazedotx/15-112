@@ -68,13 +68,15 @@ def onStep(app):
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
+    PlrHandler.keyPressedLogic(app,key)
     pass
 
 def onKeyRelease(app,key):
+    PlrHandler.keyReleasedLogic(app,key)
     pass
 
 def onKeyHold(app,keys):
-    PlrHandler.movePlayer(app,keys)
+    PlrHandler.keysHeldLogic(app,keys)
     pass
 
 #_________________________________________MOUSE EVENTS____________________________________________

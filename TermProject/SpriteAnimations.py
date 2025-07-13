@@ -18,6 +18,11 @@ animationSettings = {
             'loops': True,
             'priority': 1,
             "framesPerSecond":8
+        },
+        "run": {
+            'loops': True,
+            'priority': 2,
+            "framesPerSecond":8
         }
     }
 }
@@ -93,14 +98,14 @@ def sortAnimations(app, entity):
     entity["animationInfo"]["animationStack"].sort(key = sortAnimationCondition, reverse = True)
 
 
-def cancelAnimation(entity, animationName):
+def cancelAnimation(app, entity, animationName):
     #cancels any animation that is currently in the animation stack. animation doesnt have to be running for it to be canceled.
     stack = entity["animationInfo"]["animationStack"]
 
     try:
         stack.remove(animationName)
     except ValueError:
-        print(f"attempt to cancel Animation {animationName} when it is not in the animation stack")
+        #print(f"attempt to cancel Animation {animationName} when it is not in the animation stack")
         pass
 
 
@@ -165,6 +170,7 @@ def updateAnimation(app, entity):
     if animationInfo["currentAnimation"] != currentHighest:
         resetAnimationInfo(entity, currentHighest)
 
+
     staticAnimData = app.staticInfo["spriteAnimations"][entity["type"]][currentHighest]
 
     animationInfo["frameCounter"] += 1
@@ -180,7 +186,7 @@ def updateAnimation(app, entity):
             if staticAnimData["loops"]:
                 animationInfo["currentFrame"] = 0
         else:
-            cancelAnimation(entity, animationInfo["currentAnimation"])
+            cancelAnimation(app, entity, animationInfo["currentAnimation"])
 
 def getAnimationFrame(app, entity):
     #This function will return the current animation frame the entity is on (the image)
