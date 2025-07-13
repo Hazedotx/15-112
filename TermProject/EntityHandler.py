@@ -2,6 +2,15 @@ from cmu_graphics import *
 
 import copy
 
+def InitAnimationInfo():
+    return (
+        {
+        "animationStack": [],
+        "currentFrame": 0,
+        "currentAnimation": None
+        }
+        )
+
 
 def InitPlayer(app, xPos, yPos):
     return {
@@ -15,11 +24,7 @@ def InitPlayer(app, xPos, yPos):
             "height": 45
         },
 
-        "animationInfo": {
-            "animationStack": [],
-            "currentFrame": 0,
-            "currentAnimation": None
-        }
+        "animationInfo": InitAnimationInfo()
     }
 
 entitySpecificInfo = {
