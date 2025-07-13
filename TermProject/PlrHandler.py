@@ -68,9 +68,9 @@ def runPlayerLogic(app, data):
     SpriteAnimations.addAnimToStack(app, app.player, "idle")
 
     if app.player["isMoving"]:
-        #SpriteAnimations.addAnimToStack(app, app.player, "run")
+        #SpriteAnimations.addAnimToStack(app, app.player, "run") jd;fd
         pass
 
 
-
+ 
 
