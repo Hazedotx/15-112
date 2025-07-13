@@ -17,6 +17,7 @@ def InitPlayer(app, xPos, yPos):
     return {
         "type": "player",
         "position": [app.width/2, app.height/2],
+        "isMoving": False,
 
         "movementSpeed": 60, # pixels per second
 
