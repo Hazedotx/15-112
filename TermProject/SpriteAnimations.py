@@ -17,7 +17,7 @@ animationSettings = {
         "idle": {
             'loops': True,
             'priority': 1,
-            "framesPerSecond": 4
+            "framesPerSecond":8
         }
     }
 }
@@ -90,7 +90,7 @@ def sortAnimations(app, entity):
         
         return animationSettings[entityName][animationName]["priority"] if animationName in animationSettings[entityName] else defaultAnimationSettings["priority"]
 
-    entity["animationInfo"]["animationStack"].sort(key = sortAnimationCondition, reversed = True)
+    entity["animationInfo"]["animationStack"].sort(key = sortAnimationCondition, reverse = True)
 
 
 def cancelAnimation(entity, animationName):
@@ -165,8 +165,6 @@ def updateAnimation(app, entity):
     if animationInfo["currentAnimation"] != currentHighest:
         resetAnimationInfo(entity, currentHighest)
 
-    print(f"Current Highest: {currentHighest}")
-
     staticAnimData = app.staticInfo["spriteAnimations"][entity["type"]][currentHighest]
 
     animationInfo["frameCounter"] += 1
@@ -178,7 +176,8 @@ def updateAnimation(app, entity):
         animationInfo["currentFrame"] += 1
 
         if animationInfo["currentFrame"] >= len(staticAnimData["frames"]):
-            if animationInfo["loops"]:
+
+            if staticAnimData["loops"]:
                 animationInfo["currentFrame"] = 0
         else:
             cancelAnimation(entity, animationInfo["currentAnimation"])
