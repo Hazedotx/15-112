@@ -90,7 +90,7 @@ def sortAnimations(app, entity):
         
         return animationSettings[entityName][animationName]["priority"] if animationName in animationSettings[entityName] else defaultAnimationSettings["priority"]
 
-    entity["animationInfo"].sort(key = sortAnimationCondition, reversed = True)
+    entity["animationInfo"]["animationStack"].sort(key = sortAnimationCondition, reversed = True)
 
 
 def cancelAnimation(entity, animationName):
@@ -124,7 +124,7 @@ def addAnimToStack(app, entity, animationName):
     if animationName in stack: return False
 
     stack.append(animationName)
-    sortAnimations(entity)
+    sortAnimations(app, entity)
 
 
 def getTopAnimation(entity):
@@ -165,6 +165,8 @@ def updateAnimation(app, entity):
     if animationInfo["currentAnimation"] != currentHighest:
         resetAnimationInfo(entity, currentHighest)
 
+    print(f"Current Highest: {currentHighest}")
+
     staticAnimData = app.staticInfo["spriteAnimations"][entity["type"]][currentHighest]
 
     animationInfo["frameCounter"] += 1
@@ -202,4 +204,4 @@ def getAnimationFrame(app, entity):
 
 
 
-pprint.pp(loadAnimations("TermProject/SpriteAnimations"))
+#pprint.pp(loadAnimations("TermProject/SpriteAnimations"))

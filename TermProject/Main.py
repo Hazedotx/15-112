@@ -55,14 +55,13 @@ def redrawAll(app):
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
     drawRect(app.player["position"][0],app.player["position"][1], app.player["playerHitboxSize"]["width"],app.player["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
-    #PlrHandler.drawPlayer(app)
-    PlrHandler.runPlayerLogic(app,{"functionToBeCalled": PlrHandler.drawPlayer})
-    
+    PlrHandler.drawPlayer(app)
 
     pass
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
+    PlrHandler.runPlayerLogic(app,None)
 
 
 

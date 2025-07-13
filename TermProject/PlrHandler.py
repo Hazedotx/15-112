@@ -33,7 +33,13 @@ def teleportPlayer(app, newPosition):
 
 
 def drawPlayer(app):
-    spriteImage = CMUImage(SpriteAnimations.getAnimationFrame(app,app.player))
+    animationFrame = SpriteAnimations.getAnimationFrame(app,app.player)
+
+    if animationFrame == None:
+        print(animationFrame)
+        return
+    
+    spriteImage = CMUImage(animationFrame)
 
     drawImage(
         spriteImage,
