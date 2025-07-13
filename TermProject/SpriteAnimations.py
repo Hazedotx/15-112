@@ -1,7 +1,16 @@
-import os
+from cmu_graphics import *
 from PIL import Image
 
-settings = {
+import os
+import pprint
+import copy
+
+defaultAnimationSettings = {
+    'loops': False,
+    'priority': 1
+}
+
+animationSettings = {
     "knightidle": {
         'loops': True,
         'priority': True
@@ -38,8 +47,62 @@ def loadAnimations(rootFolder):
             image = Image.open(fullPath)
             frames.append(image)
 
-        animations[animationName] = frames
+        #Logic for building final components.
+
+        parentFileName = os.path.basename(os.path.dirname(dirPath)).lower()
+        animationInformation = animationSettings[animationName] if animationName in animationSettings else copy.deepcopy(defaultAnimationSettings)
+
+
+        if not (parentFileName in animations):
+            animations[parentFileName] = {}
+        animations[parentFileName][animationName] = {}
+
+        for key in defaultAnimationSettings:
+            value = defaultAnimationSettings[key]
+            animations[parentFileName][animationName][key] = animationInformation[key] if (key in animationInformation) else value
+
+        animations[parentFileName][animationName]["frames"] = frames
 
     return animations
 
-print(loadAnimations("TermProject/SpriteAnimations"))
+
+def cancelAnimation(entity, animationName):
+
+    animationIndex = entity["animationInfo"]["animationStack"].index(animationName)
+
+    if animationIndex != -1:
+        entity["animationInfo"]["animationStack"].pop(animationIndex)
+
+
+def addAnimToStack(entity, animationName):
+
+    #check if animation keyframes exist.
+        # if they dont exist, return False and provide an error
+        #if they exist, then add the animation name to the stack 
+
+    animationIndex = entity["animationInfo"]["animationStack"].index(animationName)
+
+    if animationIndex != -1:
+        entity["animationInfo"]["animationStack"].append(animationName)
+
+    
+def sortAnimations(entity):
+
+    # sort the animations based off the priority found when indexing animationSettings. 
+
+    pass
+
+def getPriorityAnimation(entity):
+
+
+
+
+    pass
+    
+
+def resetAnimationInfo(entity):
+    entity["animationInfo"]["animationStack"]["currentFrame"] = 0
+    entity["animationInfo"]["animationStack"]["currentAnimation"] = None
+
+
+pprint.pp(loadAnimations("TermProject/SpriteAnimations"))
