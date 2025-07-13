@@ -7,6 +7,7 @@ def InitAnimationInfo():
         {
         "animationStack": [],
         "currentFrame": 0,
+        "frameCounter": 0,
         "currentAnimation": None
         }
         )
