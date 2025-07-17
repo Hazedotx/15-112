@@ -24,8 +24,8 @@ def InitPlayer(app, xPos, yPos):
         "movementSpeed": 60, # pixels per second
 
         "playerHitboxSize":{
-            "width": 45,  # pixels
-            "height": 60
+            "width": app.width / 10,  # pixels
+            "height": app.height / 8
         },
 
         "animationInfo": InitAnimationInfo()

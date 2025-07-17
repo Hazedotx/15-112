@@ -27,8 +27,8 @@ animationSettings = {
     }
 }
 # TO DO:
-# this current animation Settings set up wont work when i scale up the amount of entities there will be. naming will be diffucltl
-# make sure to group the animations based off the entity it is for.
+#turn the animation controller into objects. each animation controller will hold the animations that 
+#want to be played for that entities specific animation
 
 
 def loadAnimations(rootFolder):
@@ -113,7 +113,7 @@ def cancelRunningAnimation(entity, animationName):
     #cancels whatever animation is currently running(highest priority)
     stack = entity["animationInfo"]["animationStack"]
     if stack: #this checks if the list has an element in it.
-        stack.pop(0)
+        stack.pop(0) # change this bc this is O(N) efficiency and that is a no no 
 
 def addAnimToStack(app, entity, animationName):
 
@@ -206,6 +206,71 @@ def getAnimationFrame(app, entity):
         return animationFrames[-1]
     else:
         return animationFrames[currentFrame]
+
+
+#________________________________________ANIMATION CONTROLLER OOP_____________________________________________
+
+# def cancelAnimation(app, entity, animationName):
+#     #cancels any animation that is currently in the animation stack. animation doesnt have to be running for it to be canceled.
+#     stack = entity["animationInfo"]["animationStack"]
+
+#     try:
+#         stack.remove(animationName)
+#     except ValueError:
+#         #print(f"attempt to cancel Animation {animationName} when it is not in the animation stack")
+#         pass
+
+class AnimationController:
+    def __init__(self, entity):
+        self.entity = entity
+        self.entityName = entity["type"]
+        self.animationStack = []
+        self.currentFrame = 0
+        self.frameCounter  = 0
+        self.currentAnimation =  None
+    
+    def sortAnimations(self):
+        # sorts the animation from least to greatest priority. 
+        # i am doing least to greatest so then i can pop an animation once its complete and have a O(1) time complexity
+
+        if not self.entityName in animationSettings:
+            print(f"Entity Name: {self.entityName} was not found in animationSettings") 
+            return
+        
+        def sortCondition(animationName):
+            return animationSettings[self.entityName][animationName]["priority"] if animationName in animationSettings[self.entityName] else defaultAnimationSettings["priority"]
+
+        self.animationStack.sort(key= sortCondition,reverse= False)
+
+    def cancelAnimation(self, animationName):
+        #removes any animation that is in the animation stack. this is another reason i sorted the stack from least to greatest
+
+        try:
+            self.animationStack.remove(animationName)
+        except ValueError:
+            #print(f"attempt to cancel Animation {animationName} when it is not in the animation stack")
+            pass
+
+    def getTopAnimation(self):
+        #returns the highest priority animation
+        return self.animationStack[-1] if self.animationStack else None
+
+    def cancelRunningAnimation(self):
+        # removes the current running animation in the stack(The last element in the stack). Therefore i can do stack.pop()
+        if self.animationStack:
+            #checks if there are one or more elements in the stack
+            self.animationStack.pop()
+        
+    def addAnimToStack(self, animationName):
+
+        if not (self.entityName in app.staticInfo["spriteAnimations"]): return False
+        if not (animationName in app.staticInfo["spriteAnimations"][self.entityName]): return False
+        if animationName in self.animationStack: return False
+
+        self.animationStack.append(animationName)
+        self.sortAnimations(self)
+
+
 
 
 
