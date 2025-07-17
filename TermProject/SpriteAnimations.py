@@ -229,6 +229,12 @@ class AnimationController:
         self.frameCounter  = 0
         self.currentAnimation =  None
     
+    def _getPriority(self, animationName):
+        #gets the priority of a specific animation
+        if self.entityName in animationSettings and animationName in animationSettings[self.entityName]:
+            return animationSettings[self.entityName][animationName]["priority"]
+        return defaultAnimationSettings["priority"]
+
     def sortAnimations(self):
         # sorts the animation from least to greatest priority. 
         # i am doing least to greatest so then i can pop an animation once its complete and have a O(1) time complexity
@@ -237,10 +243,7 @@ class AnimationController:
             print(f"Entity Name: {self.entityName} was not found in animationSettings") 
             return
         
-        def sortCondition(animationName):
-            return animationSettings[self.entityName][animationName]["priority"] if animationName in animationSettings[self.entityName] else defaultAnimationSettings["priority"]
-
-        self.animationStack.sort(key= sortCondition,reverse= False)
+        self.animationStack.sort(key=self._getPriority, reverse=False)
 
     def cancelAnimation(self, animationName):
         #removes any animation that is in the animation stack. this is another reason i sorted the stack from least to greatest
@@ -258,21 +261,17 @@ class AnimationController:
     def cancelRunningAnimation(self):
         # removes the current running animation in the stack(The last element in the stack). Therefore i can do stack.pop()
         if self.animationStack:
-            #checks if there are one or more elements in the stack
             self.animationStack.pop()
         
-    def addAnimToStack(self, animationName):
-
+    def addAnimToStack(self, app, animationName):
         if not (self.entityName in app.staticInfo["spriteAnimations"]): return False
         if not (animationName in app.staticInfo["spriteAnimations"][self.entityName]): return False
         if animationName in self.animationStack: return False
 
         self.animationStack.append(animationName)
-        self.sortAnimations(self)
+        self.sortAnimations()
 
-
-    def resetAnimationInfo(self, newAnimation):
-        self.animationStack = []
+    def _resetForNewAnimation(self, newAnimation):
         self.currentAnimation = newAnimation
         self.currentFrame = 0
         self.frameCounter = 0
@@ -289,17 +288,7 @@ class AnimationController:
             return animationFrames[self.currentFrame]
         
     def updateAnimation(self, app):
-        # this function will serve as the core logic loop for an entities animation
         # this function will change the animation information, BUT will not load any actual sprite animations
-
-        #Logic:
-            #get the current higest priority animation
-            #check if this animation is still the same or a new animation
-                #if the new animation is the highest, we will have to reset the current animation information to reset the current animation Info
-
-            #we will then update the current animation frames accordingly.
-                #
-
 
         currentHighest = self.getTopAnimation()
 
@@ -308,26 +297,25 @@ class AnimationController:
             return
 
         if self.currentAnimation != currentHighest:
-            self.resetAnimationInfo(currentHighest)
-
+            self._resetForNewAnimation(currentHighest)
 
         staticAnimData = app.staticInfo["spriteAnimations"][self.entityName][currentHighest]
 
         self.frameCounter += 1
-
+        
         stepsPerFrame = app.stepsPerSecond // staticAnimData["framesPerSecond"]
+        if stepsPerFrame < 1:
+            stepsPerFrame = 1
 
         if self.frameCounter >= stepsPerFrame:
             self.frameCounter = 0
             self.currentFrame += 1
 
             if self.currentFrame >= len(staticAnimData["frames"]):
-
-                if staticAnimData["loops"]:
+                if staticAnimData.get("loops", False):
                     self.currentFrame = 0
-            else:
-                self.cancelAnimation(self.currentAnimation)
-
+                else:
+                    self.cancelRunningAnimation()
 
 
 
