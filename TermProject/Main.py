@@ -40,29 +40,29 @@ def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
-    drawRect(app.player["position"][0],app.player["position"][1], app.player["playerHitboxSize"]["width"],app.player["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
-    app.player.drawPlayer(app)
+    drawRect(app.player.position[0],app.player.position[1], app.player.playerHitboxSize["width"],app.player.playerHitboxSize["height"], fill = None, border = "black", align = "center")
+    app.player.drawPlayer()
 
     pass
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
-    app.player.runPlayerLogic(app,None)
+    app.player.runPlayerLogic(None)
 
 
 
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
-    app.player.keyPressedLogic(app,key)
+    app.player.keyPressedLogic(key)
     pass
 
 def onKeyRelease(app,key):
-    app.player.keyReleasedLogic(app,key)
+    app.player.keyReleasedLogic(key)
     pass
 
 def onKeyHold(app,keys):
-    app.player.keysHeldLogic(app,keys)
+    app.player.keysHeldLogic(keys)
     pass
 
 #_________________________________________MOUSE EVENTS____________________________________________

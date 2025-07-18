@@ -8,9 +8,11 @@ import Main
 
 class Player:
     def __init__(self, app):
+
+        self.app = app
         
         self.type = "player"
-        self.position = [app.width/2, app.height/2],
+        self.position = [app.width/2, app.height/2]
         self.isMoving = False
         self.keysPressed = set()
         self.facingDirection = "right"
@@ -35,86 +37,85 @@ class Player:
         self.animationInfo = SpriteAnimations
 
 
-        def movePlayer(self, keys):
-            # will go through all the possible keys and then update the plr position based off of the keys pressed
-            # will also update the player state "isMoving"
-            speedRatio = (1 / app.stepsPerSecond) * self.movementSpeed
+    def movePlayer(self, keys):
+        # will go through all the possible keys and then update the plr position based off of the keys pressed
+        # will also update the player state "isMoving"
+        speedRatio = (1 / self.app.stepsPerSecond) * self.movementSpeed
 
-            for key in keys:
-                if key in self.MOVEMENT_KEY_MAP:
-                    self.position[0] += self.MOVEMENT_KEY_MAP[key][0] * speedRatio
-                    self.position[1] += self.MOVEMENT_KEY_MAP[key][1] * speedRatio
+        for key in keys:
+            if key in self.MOVEMENT_KEY_MAP:
+                self.position[0] += self.MOVEMENT_KEY_MAP[key][0] * speedRatio
+                self.position[1] += self.MOVEMENT_KEY_MAP[key][1] * speedRatio
 
-        def teleportPlayer(self, newPosition):
-            # will set the players position to a newPosition.
+    def teleportPlayer(self, newPosition):
+        # will set the players position to a newPosition.
 
-            self.position[0] = newPosition[0]
-            self.position[1] = newPosition[1]
+        self.position[0] = newPosition[0]
+        self.position[1] = newPosition[1]
 
-        def drawPlayer(self, app):
-            # make sure to update this soon.
-            animationFrame = SpriteAnimations.getAnimationFrame(app,app.player)
+    def drawPlayer(self):
+        # make sure to update this soon.
+        animationFrame = SpriteAnimations.getAnimationFrame(self.app)
 
-            if animationFrame == None:
-                print(animationFrame)
-                return
-            
-            spriteImage = CMUImage(animationFrame if self.facingDirection == "right" else animationFrame.transpose(Image.FLIP_LEFT_RIGHT))
-
-            drawImage(
-                spriteImage,
-                self.position[0],
-                self.position[1],
-                align = "center",
-                width = self.playerHitboxSize["width"],
-                height = self.playerHitboxSize["height"]
-            )
+        if animationFrame == None:
+            print(animationFrame)
+            return
         
-        def keyPressedLogic(self, key):
-            self.keysPressed.add(key)
+        spriteImage = CMUImage(animationFrame if self.facingDirection == "right" else animationFrame.transpose(Image.FLIP_LEFT_RIGHT))
 
-        def keyReleasedLogic(self, key):
-            self.keysPressed.discard(key)
+        drawImage(
+            spriteImage,
+            self.position[0],
+            self.position[1],
+            align = "center",
+            width = self.playerHitboxSize["width"],
+            height = self.playerHitboxSize["height"]
+        )
+    
+    def keyPressedLogic(self, key):
+        self.keysPressed.add(key)
 
-        def keysHeldLogic(app,keys):
+    def keyReleasedLogic(self, key):
+        self.keysPressed.discard(key)
 
-            self.movePlayer(app,keys)
+    def keysHeldLogic(self,keys):
 
-            if "d" in keys:
-                self.facingDirection = "right"
-            elif "a" in keys:
-                self.facingDirection = "left"
+        self.movePlayer(keys)
 
-            pass
-
-        def movementKeyPressed(app):
-            #checks if any movement keys are being held down so I can tell which animation to run
-            for key in self.MOVEMENT_KEY_MAP:
-                if key in self.keysPressed:
-                    return True
-
-            return False
-        
-        def runPlayerLogic(app, data):
-            """
-            data = {}
-            """
-
-            #this function will handle player data updating
-            #anything that should ever happen to the player should run through here
-            #draw functions will not be ran through here. only logic which affects data
-            #function will run according to what "data" parameter has in it
-
-            self.isMoving = movementKeyPressed(app)
-
-
-            SpriteAnimations.updateAnimation(app,app.player)
-            SpriteAnimations.addAnimToStack(app, app.player, "idle")
-
-            if self.isMoving:
-                SpriteAnimations.addAnimToStack(app, app.player, "run")
-            else:
-                SpriteAnimations.cancelAnimation(app, app.player, "run")
-
+        if "d" in keys:
+            self.facingDirection = "right"
+        elif "a" in keys:
+            self.facingDirection = "left"
 
         pass
+
+    def movementKeyPressed(self):
+        #checks if any movement keys are being held down so I can tell which animation to run
+        for key in self.MOVEMENT_KEY_MAP:
+            if key in self.keysPressed:
+                return True
+
+        return False
+    
+    def runPlayerLogic(self, data):
+        """
+        data = {}
+        """
+
+        #this function will handle player data updating
+        #anything that should ever happen to the player should run through here
+        #draw functions will not be ran through here. only logic which affects data
+        #function will run according to what "data" parameter has in it
+
+        self.isMoving = self.movementKeyPressed()
+
+        self.animationController.updateAnimation(self.app)
+        self.animationController.addAnimToStack("idle")
+
+        if self.isMoving:
+            self.animationController.addAnimToStack("run")
+        else:
+            self.animationController.cancelAnimation("run")
+
+
+    pass

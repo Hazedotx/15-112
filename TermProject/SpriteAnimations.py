@@ -17,7 +17,7 @@ animationSettings = {
         "idle": {
             'loops': True,
             'priority': 1,
-            "framesPerSecond":8
+            "framesPerSecond":8 
         },
         "run": {
             'loops': True,
