@@ -119,73 +119,50 @@ spriteAnimations = loadAnimations("TermProject/SpriteAnimations")
 
 class AnimationController:
     def __init__(self, animations, animationSettings):
-        """
-        animations: 
-        {
-            'idle': {
-                'frames': [ImageObject1, ImageObject2],
-                'priority': 0,
-                'loops': True
-            },
-        }
-
-        animationSettings:
-        {
-            "idle": {
-                'loops': True,
-                'priority': 1,
-                "framesPerSecond":8
-            },
-            "run": {
-                'loops': True,
-                'priority': 2,
-                "framesPerSecond":8
-            }
-        }
-
-        """
         self.animationStack = []
         self.animations = animations
         self.animationSettings = animationSettings
         self.currentFrame = 0
         self.frameCounter  = 0
-        self.currentAnimation =  None
+        self.currentAnimation = None
     
-    def _getPriority(self, animationName):
-        #gets the priority of a specific animation
+    def _getPriority(self, animationObject):
+        animationName = animationObject['name']
         if animationName in self.animationSettings:
             return self.animationSettings[animationName]["priority"]
         else:
             return defaultAnimationSettings["priority"]
 
     def sortAnimations(self):
-        # sorts the animation from least to greatest priority. 
-        # i am doing least to greatest so then i can pop an animation once its complete and have a O(1) time complexity
         self.animationStack.sort(key=self._getPriority, reverse=False)
 
     def cancelAnimation(self, animationName):
-        #removes any animation that is in the animation stack. this is another reason i sorted the stack from least to greatest
-
-        try:
-            self.animationStack.remove(animationName)
-        except ValueError:
-            #print(f"attempt to cancel Animation {animationName} when it is not in the animation stack")
-            pass
+        self.animationStack = [anim for anim in self.animationStack if anim['name'] != animationName]
 
     def getTopAnimation(self):
-        #returns the highest priority animation
         return self.animationStack[-1] if self.animationStack else None
 
     def cancelRunningAnimation(self):
-        # removes the current running animation in the stack(The last element in the stack). Therefore i can do stack.pop()
         if self.animationStack:
             self.animationStack.pop()
         
     def addAnimToStack(self, animationName):
         if not (animationName in self.animations): return
-        if animationName in self.animationStack: return
+        if any(anim['name'] == animationName for anim in self.animationStack): return
 
-        self.animationStack.append(animationName)
+        self.animationStack.append({
+            'name': animationName,
+            'onComplete': None
+        })
+        self.sortAnimations()
+        
+    def playAnimationOnce(self, animationName, onComplete=None):
+        if not (animationName in self.animations): return
+        
+        self.animationStack.append({
+            'name': animationName,
+            'onComplete': onComplete
+        })
         self.sortAnimations()
 
     def _resetForNewAnimation(self, newAnimation):
@@ -194,10 +171,11 @@ class AnimationController:
         self.frameCounter = 0
 
     def getAnimationFrame(self, app):
-        if self.currentAnimation == None:
+        if self.currentAnimation is None:
             return None
         
-        animationFrames = self.animations[self.currentAnimation]["frames"]
+        animationName = self.currentAnimation['name']
+        animationFrames = self.animations[animationName]["frames"]
 
         if self.currentFrame >= len(animationFrames):
             return animationFrames[-1]
@@ -205,8 +183,6 @@ class AnimationController:
             return animationFrames[self.currentFrame]
         
     def updateAnimation(self, app):
-        # this function will change the animation information, BUT will not load any actual sprite animations
-
         currentHighest = self.getTopAnimation()
 
         if not currentHighest:
@@ -216,7 +192,8 @@ class AnimationController:
         if self.currentAnimation != currentHighest:
             self._resetForNewAnimation(currentHighest)
 
-        staticAnimData = self.animations[currentHighest]
+        currentAnimationName = self.currentAnimation['name']
+        staticAnimData = self.animations[currentAnimationName]
 
         self.frameCounter += 1
         
@@ -232,5 +209,7 @@ class AnimationController:
                 if staticAnimData.get("loops", False):
                     self.currentFrame = 0
                 else:
+                    callback = self.currentAnimation.get('onComplete')
+                    if callback:
+                        callback()
                     self.cancelRunningAnimation()
-
