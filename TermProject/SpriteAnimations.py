@@ -26,6 +26,7 @@ animationSettings = {
         }
     }
 }
+
 # TO DO:
 #turn the animation controller into objects. each animation controller will hold the animations that 
 #want to be played for that entities specific animation
@@ -80,31 +81,57 @@ def loadAnimations(rootFolder):
 
     return animations
 
+
 #________________________________________ANIMATION CONTROLLER OOP_____________________________________________
 
+#to do:
+# make the animation controller OOP less dependant on external animation tables. 
+
+
 class AnimationController:
-    def __init__(self, entity):
-        self.entity = entity
-        self.entityName = entity["type"]
+    def __init__(self, animations, animationSettings):
+        """
+        animations: 
+        {
+            'idle': {
+                'frames': [ImageObject1, ImageObject2],
+                'priority': 0,
+                'loops': True
+            },
+        }
+
+        animationSettings:
+        {
+            "idle": {
+                'loops': True,
+                'priority': 1,
+                "framesPerSecond":8
+            },
+            "run": {
+                'loops': True,
+                'priority': 2,
+                "framesPerSecond":8
+            }
+        }
+
+        """
         self.animationStack = []
+        self.animations = animations
+        self.animationSettings = animationSettings
         self.currentFrame = 0
         self.frameCounter  = 0
         self.currentAnimation =  None
     
     def _getPriority(self, animationName):
         #gets the priority of a specific animation
-        if self.entityName in animationSettings and animationName in animationSettings[self.entityName]:
-            return animationSettings[self.entityName][animationName]["priority"]
-        return defaultAnimationSettings["priority"]
+        if animationName in self.animationSettings:
+            return animationSettings[animationName]["priority"]
+        else:
+            return defaultAnimationSettings["priority"]
 
     def sortAnimations(self):
         # sorts the animation from least to greatest priority. 
         # i am doing least to greatest so then i can pop an animation once its complete and have a O(1) time complexity
-
-        if not self.entityName in animationSettings:
-            print(f"Entity Name: {self.entityName} was not found in animationSettings") 
-            return
-        
         self.animationStack.sort(key=self._getPriority, reverse=False)
 
     def cancelAnimation(self, animationName):
@@ -125,10 +152,9 @@ class AnimationController:
         if self.animationStack:
             self.animationStack.pop()
         
-    def addAnimToStack(self, app, animationName):
-        if not (self.entityName in app.staticInfo["spriteAnimations"]): return False
-        if not (animationName in app.staticInfo["spriteAnimations"][self.entityName]): return False
-        if animationName in self.animationStack: return False
+    def addAnimToStack(self, animationName):
+        if not (animationName in self.animations): return
+        if animationName in self.animationStack: return
 
         self.animationStack.append(animationName)
         self.sortAnimations()
@@ -142,7 +168,7 @@ class AnimationController:
         if self.currentAnimation == None:
             return None
         
-        animationFrames = app.staticInfo["spriteAnimations"][self.entityName][self.currentAnimation]["frames"]
+        animationFrames = self.animations[self.currentAnimation]["frames"]
 
         if self.currentFrame >= len(animationFrames):
             return animationFrames[-1]
@@ -161,7 +187,7 @@ class AnimationController:
         if self.currentAnimation != currentHighest:
             self._resetForNewAnimation(currentHighest)
 
-        staticAnimData = app.staticInfo["spriteAnimations"][self.entityName][currentHighest]
+        staticAnimData = self.animations[currentHighest]
 
         self.frameCounter += 1
         
@@ -178,7 +204,3 @@ class AnimationController:
                     self.currentFrame = 0
                 else:
                     self.cancelRunningAnimation()
-
-
-
-#pprint.pp(loadAnimations("TermProject/SpriteAnimations"))
