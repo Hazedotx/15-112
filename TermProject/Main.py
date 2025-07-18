@@ -1,9 +1,10 @@
 from cmu_graphics import *
 
 import Helper
-import PlrHandler
 import SpriteAnimations
 import EntityHandler
+import Config
+import PlayerOOP
 
 import copy
 import random
@@ -12,40 +13,23 @@ from SpriteAnimations import spriteAnimations as spriteAnimations
 
 #pip install pillow
 
-SCREEN_WIDTH, SCREEN_HEIGHT = Helper.grabScreenDimensions()
-
 def applySettings(app):
 
-    if app.gameSettings["fullScreenEnabled"]:
-        app.width = SCREEN_WIDTH
-        app.height = SCREEN_HEIGHT
+    if Config.SETTINGS["fullScreenEnabled"]:
+        app.width = Config.SCREEN_WIDTH
+        app.height = Config.SCREEN_HEIGHT
     
-    app.stepsPerSecond = app.gameSettings["fps"]
+    app.stepsPerSecond = Config.SETTINGS["fps"]
 
     pass
 
 def onAppStart(app):
 
-    app.staticInfo = {
-        "fullScreenDimensions" : {
-            "width" : SCREEN_WIDTH, 
-            "height" : SCREEN_HEIGHT
-        },
-
-        "spriteAnimations": spriteAnimations
-    }
-
-    app.gameSettings = {
-        "fullScreenEnabled": False,
-        "fps": 60
-    }
-
     app.globalStates = {
         "totalTicks": 0
     }
 
-    app.player = EntityHandler.createEntity(app,"player",app.width/2,app.height/2)
-
+    app.player = PlayerOOP.Player(app)
 
     applySettings(app)
 
@@ -57,28 +41,28 @@ def redrawAll(app):
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
     drawRect(app.player["position"][0],app.player["position"][1], app.player["playerHitboxSize"]["width"],app.player["playerHitboxSize"]["height"], fill = None, border = "black", align = "center")
-    PlrHandler.drawPlayer(app)
+    app.player.drawPlayer(app)
 
     pass
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
-    PlrHandler.runPlayerLogic(app,None)
+    app.player.runPlayerLogic(app,None)
 
 
 
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
-    PlrHandler.keyPressedLogic(app,key)
+    app.player.keyPressedLogic(app,key)
     pass
 
 def onKeyRelease(app,key):
-    PlrHandler.keyReleasedLogic(app,key)
+    app.player.keyReleasedLogic(app,key)
     pass
 
 def onKeyHold(app,keys):
-    PlrHandler.keysHeldLogic(app,keys)
+    app.player.keysHeldLogic(app,keys)
     pass
 
 #_________________________________________MOUSE EVENTS____________________________________________

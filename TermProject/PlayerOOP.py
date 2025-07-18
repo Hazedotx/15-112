@@ -1,8 +1,9 @@
 from cmu_graphics import *
 from PIL import Image
 import SpriteAnimations
-import SpriteAnimations
+import Config
 import Main
+
 
 
 class Player:
@@ -13,6 +14,8 @@ class Player:
         self.isMoving = False
         self.keysPressed = set()
         self.facingDirection = "right"
+
+        self.animationController = SpriteAnimations.AnimationController(SpriteAnimations.spriteAnimations["player"], SpriteAnimations.animationSettings["player"])
 
         # adding MKM here incase i have an enemy which disorients the player
         self.MOVEMENT_KEY_MAP = {
@@ -91,5 +94,27 @@ class Player:
                     return True
 
             return False
+        
+        def runPlayerLogic(app, data):
+            """
+            data = {}
+            """
+
+            #this function will handle player data updating
+            #anything that should ever happen to the player should run through here
+            #draw functions will not be ran through here. only logic which affects data
+            #function will run according to what "data" parameter has in it
+
+            self.isMoving = movementKeyPressed(app)
+
+
+            SpriteAnimations.updateAnimation(app,app.player)
+            SpriteAnimations.addAnimToStack(app, app.player, "idle")
+
+            if self.isMoving:
+                SpriteAnimations.addAnimToStack(app, app.player, "run")
+            else:
+                SpriteAnimations.cancelAnimation(app, app.player, "run")
+
 
         pass
