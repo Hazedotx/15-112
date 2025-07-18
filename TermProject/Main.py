@@ -47,7 +47,7 @@ def redrawAll(app):
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
-    app.player.runPlayerLogic(None)
+    app.player.runPlayerLogic()
 
 
 

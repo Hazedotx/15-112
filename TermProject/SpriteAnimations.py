@@ -82,6 +82,7 @@ def loadAnimations(rootFolder):
         animations[parentFileName][animationName]["frames"] = frames
 
     return animations
+spriteAnimations = loadAnimations("TermProject/SpriteAnimations")
 
 #________________________________________ANIMATION CONTROLLER OOP_____________________________________________
 
@@ -122,7 +123,7 @@ class AnimationController:
     def _getPriority(self, animationName):
         #gets the priority of a specific animation
         if animationName in self.animationSettings:
-            return animationSettings[animationName]["priority"]
+            return self.animationSettings[animationName]["priority"]
         else:
             return defaultAnimationSettings["priority"]
 
@@ -202,4 +203,3 @@ class AnimationController:
                 else:
                     self.cancelRunningAnimation()
 
-spriteAnimations = loadAnimations("TermProject/SpriteAnimations")

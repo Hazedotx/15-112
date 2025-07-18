@@ -2,7 +2,6 @@ from cmu_graphics import *
 from PIL import Image
 import SpriteAnimations
 import Config
-import Main
 
 
 
@@ -55,7 +54,7 @@ class Player:
 
     def drawPlayer(self):
         # make sure to update this soon.
-        animationFrame = SpriteAnimations.getAnimationFrame(self.app)
+        animationFrame = self.animationController.getAnimationFrame(self.app)
 
         if animationFrame == None:
             print(animationFrame)
@@ -97,7 +96,7 @@ class Player:
 
         return False
     
-    def runPlayerLogic(self, data):
+    def runPlayerLogic(self):
         """
         data = {}
         """
