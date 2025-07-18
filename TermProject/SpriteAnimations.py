@@ -24,6 +24,37 @@ animationSettings = {
             'priority': 2,
             "framesPerSecond":8
         }
+    },
+
+    "skeleton": {
+        "idle": {
+            'loops': True,
+            'priority': 1,
+            "framesPerSecond":8 
+        },
+        "walk": {
+            'loops': True,
+            'priority': 2,
+            "framesPerSecond":8
+        },
+        "damage": {
+            'loops': False,
+            'priority': 3,
+            "framesPerSecond":8
+        },
+
+        "attack": {
+            'loops': False,
+            'priority': 4,
+            "framesPerSecond":8 
+        },
+        "death": {
+            'loops': False,
+            'priority': 5,
+            "framesPerSecond":8
+        },
+
+
     }
 }
 
