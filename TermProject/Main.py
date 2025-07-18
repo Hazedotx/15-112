@@ -2,9 +2,8 @@ from cmu_graphics import *
 
 import Helper
 import SpriteAnimations
-import EntityHandler
 import Config
-import PlayerOOP
+import TermProject.EntityLogic.Player as Player
 
 import copy
 import random
@@ -29,7 +28,7 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    app.player = PlayerOOP.Player(app)
+    app.player = Player.Player(app)
 
     applySettings(app)
 
