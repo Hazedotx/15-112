@@ -8,17 +8,19 @@ import EntityHandler
 import copy
 import random
 
+from SpriteAnimations import spriteAnimations as spriteAnimations
+
 #pip install pillow
 
 SCREEN_WIDTH, SCREEN_HEIGHT = Helper.grabScreenDimensions()
 
 def applySettings(app):
 
-    if app.playerSettings["fullScreenEnabled"]:
+    if app.gameSettings["fullScreenEnabled"]:
         app.width = SCREEN_WIDTH
         app.height = SCREEN_HEIGHT
     
-    app.stepsPerSecond = app.playerSettings["fps"]
+    app.stepsPerSecond = app.gameSettings["fps"]
 
     pass
 
@@ -30,10 +32,10 @@ def onAppStart(app):
             "height" : SCREEN_HEIGHT
         },
 
-        "spriteAnimations": SpriteAnimations.loadAnimations("TermProject/SpriteAnimations")
+        "spriteAnimations": spriteAnimations
     }
 
-    app.playerSettings = {
+    app.gameSettings = {
         "fullScreenEnabled": False,
         "fps": 60
     }

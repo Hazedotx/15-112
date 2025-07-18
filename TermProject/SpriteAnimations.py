@@ -27,6 +27,8 @@ animationSettings = {
     }
 }
 
+spriteAnimations = None
+
 # TO DO:
 #turn the animation controller into objects. each animation controller will hold the animations that 
 #want to be played for that entities specific animation
@@ -81,12 +83,7 @@ def loadAnimations(rootFolder):
 
     return animations
 
-
 #________________________________________ANIMATION CONTROLLER OOP_____________________________________________
-
-#to do:
-# make the animation controller OOP less dependant on external animation tables. 
-
 
 class AnimationController:
     def __init__(self, animations, animationSettings):
@@ -204,3 +201,5 @@ class AnimationController:
                     self.currentFrame = 0
                 else:
                     self.cancelRunningAnimation()
+
+spriteAnimations = loadAnimations("TermProject/SpriteAnimations")
