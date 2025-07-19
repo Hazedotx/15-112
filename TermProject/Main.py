@@ -3,7 +3,9 @@ from cmu_graphics import *
 import Helper
 import SpriteAnimations
 import Config
-import TermProject.EntityLogic.Player as Player
+
+import EntityLogic.Player as Player
+import EntityLogic.Skeleton1 as Skeleton1
 
 import copy
 import random
@@ -29,6 +31,7 @@ def onAppStart(app):
     }
 
     app.player = Player.Player(app)
+    app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
 
     applySettings(app)
 
@@ -41,12 +44,14 @@ def redrawAll(app):
 
     drawRect(app.player.position[0],app.player.position[1], app.player.playerHitboxSize["width"],app.player.playerHitboxSize["height"], fill = None, border = "black", align = "center")
     app.player.drawPlayer()
+    app.skeleton.drawSkeleton()
 
     pass
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
     app.player.runPlayerLogic()
+    app.skeleton.runSkeletonLogic()
 
 
 

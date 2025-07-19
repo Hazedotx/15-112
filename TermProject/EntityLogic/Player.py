@@ -96,6 +96,10 @@ class Player:
 
         return False
     
+    def takeDamage(self, damageAmount):
+        print("make playet take damage")
+    
+
     def runPlayerLogic(self):
         """
         data = {}
