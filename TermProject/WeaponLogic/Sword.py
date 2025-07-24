@@ -48,7 +48,11 @@ class Sword:
         hitList = set()
 
         for enemy in self.app.allEntities["Enemies"]:
-            if self.animationController.currentImage.hitsShape(enemy.animationController.currentImage):
+            selfImage = self.animationController.currentImage
+            enemyImage = enemy.animationController.currentImage
+            if not selfImage or not enemyImage: continue
+
+            if selfImage.hitsShape(enemyImage):
                 hitList.add(enemy)
 
         #return a list of enemies the sword hit.
@@ -63,9 +67,9 @@ class Sword:
         deltaY = self.position[1] - mouseY
         deltaXY = math.sqrt(deltaX**2 + deltaY**2)
 
-        angle = math.atan((mouseX - self.center) / (mouseY - self.center))
-        self.position[0] = self.center + self.clampRadius * math.cos(angle)
-        self.position[1] = self.center + self.clampRadius * math.sin(angle)
+        angle = math.atan((mouseX - self.center[0]) / (mouseY - self.center[1]))
+        self.position[0] = self.center[0] + self.clampRadius * math.cos(angle)
+        self.position[1] = self.center[0] + self.clampRadius * math.sin(angle)
 
         if self.swordSpeed <= deltaXY:
             print("Can hurt enemy")

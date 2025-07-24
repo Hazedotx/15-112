@@ -50,11 +50,14 @@ def onAppStart(app):
 
     pass
 
-def updateEntities(functionName):
-    for entityList in app.allEntities:
-        for entity in entityList:
+def updateEntities(app, functionName, Params = None):
+    # params will be a list which gets unpacked and passed
+    for entitySetName in app.allEntities:
+        for entity in app.allEntities[entitySetName]:
             possibleMethod = getattr(entity, functionName, None)
-            if callable(possibleMethod):
+            if callable(possibleMethod) and Params != None:
+                possibleMethod(*Params)
+            elif callable(possibleMethod):
                 possibleMethod()
 
     
@@ -66,7 +69,7 @@ def redrawAll(app):
     #app.player.drawPlayer()
     #app.skeleton.drawSkeleton()
 
-    updateEntities("draw")
+    updateEntities(app, "draw")
 
     pass
 
@@ -75,7 +78,7 @@ def onStep(app):
     #app.player.runPlayerLogic()
     #app.skeleton.runSkeletonLogic()
 
-    updateEntities("runLogic")
+    updateEntities(app, "runLogic")
 
 
 
@@ -101,6 +104,7 @@ def onKeyHold(app,keys):
 #_________________________________________MOUSE EVENTS____________________________________________
 
 def onMouseMove(app,mouseX,mouseY):
+    updateEntities(app, "onMouseMove", [mouseX, mouseY])
     pass
 
 def onMousePress(app, mouseX, mouseY):
