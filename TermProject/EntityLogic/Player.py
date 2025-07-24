@@ -2,11 +2,13 @@ from cmu_graphics import *
 from PIL import Image
 import SpriteAnimations
 import Config
-
+import uuid
 
 
 class Player:
     def __init__(self, app):
+
+        self.id = uuid.uuid4()
 
         self.app = app
         
@@ -35,6 +37,13 @@ class Player:
 
         self.animationInfo = SpriteAnimations
 
+    def __eq__(self, other):
+        if not isinstance(other, Player): return False
+        return self.id == other.id
+    
+    def __hash__(self):
+        return hash(self.id)
+
 
     def movePlayer(self, keys):
         # will go through all the possible keys and then update the plr position based off of the keys pressed
@@ -52,7 +61,7 @@ class Player:
         self.position[0] = newPosition[0]
         self.position[1] = newPosition[1]
 
-    def drawPlayer(self):
+    def draw(self):
         # make sure to update this soon.
         animationFrame = self.animationController.getAnimationFrame(self.app)
 
@@ -62,7 +71,7 @@ class Player:
         
         spriteImage = CMUImage(animationFrame if self.facingDirection == "right" else animationFrame.transpose(Image.FLIP_LEFT_RIGHT))
 
-        drawImage(
+        self.animationController.currentImage = drawImage(
             spriteImage,
             self.position[0],
             self.position[1],
@@ -100,7 +109,7 @@ class Player:
         print("make playet take damage")
     
 
-    def runPlayerLogic(self):
+    def runLogic(self):
         """
         data = {}
         """

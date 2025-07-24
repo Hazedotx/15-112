@@ -6,6 +6,7 @@ import Config
 
 import EntityLogic.Player as Player
 import EntityLogic.Skeleton1 as Skeleton1
+import WeaponLogic.Sword as Sword
 
 import copy
 import random
@@ -32,26 +33,54 @@ def onAppStart(app):
 
     app.player = Player.Player(app)
     app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
+    app.playerSword = Sword.Sword(app)
+
+    app.allEntities = { #entities are anything which have custom logic/behavior built into them.
+        "Enemies": set(),
+        "Players": set(),
+        "NonLiving": set()
+    }
+
+    app.allEntities["Enemies"].add(app.skeleton)
+    app.allEntities["Players"].add(app.player)
+    app.allEntities["NonLiving"].add(app.playerSword)
 
     applySettings(app)
 
 
     pass
+
+def updateEntities(functionName):
+    for entityList in app.allEntities:
+        for entity in entityList:
+            possibleMethod = getattr(entity, functionName, None)
+            if callable(possibleMethod):
+                possibleMethod()
+
     
 def redrawAll(app):
 
     drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
 
-    drawRect(app.player.position[0],app.player.position[1], app.player.playerHitboxSize["width"],app.player.playerHitboxSize["height"], fill = None, border = "black", align = "center")
-    app.player.drawPlayer()
-    app.skeleton.drawSkeleton()
+    #drawRect(app.player.position[0],app.player.position[1], app.player.playerHitboxSize["width"],app.player.playerHitboxSize["height"], fill = None, border = "black", align = "center")
+    #app.player.drawPlayer()
+    #app.skeleton.drawSkeleton()
+
+    updateEntities("draw")
 
     pass
 
 def onStep(app):
     app.globalStates["totalTicks"] += 1
-    app.player.runPlayerLogic()
-    app.skeleton.runSkeletonLogic()
+    #app.player.runPlayerLogic()
+    #app.skeleton.runSkeletonLogic()
+
+    updateEntities("runLogic")
+
+
+
+
+
 
 
 

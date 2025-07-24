@@ -53,9 +53,16 @@ animationSettings = {
             'priority': 5,
             "framesPerSecond":8
         },
+    },
 
-
+    "sword": {
+        "default": {
+            'loops': True,
+            'priority': 1,
+            'framesPerSecond': 1
+        }
     }
+
 }
 
 spriteAnimations = None
@@ -125,6 +132,8 @@ class AnimationController:
         self.currentFrame = 0
         self.frameCounter  = 0
         self.currentAnimation = None
+
+        self.currentImage = None #used for hitbox detection :D
     
     def _getPriority(self, animationObject):
         animationName = animationObject['name']

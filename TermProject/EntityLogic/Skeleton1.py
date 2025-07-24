@@ -3,11 +3,14 @@ from PIL import Image
 import SpriteAnimations
 import Config
 import math
+import uuid
 
 class Skeleton:
     def __init__(self, app, startPosition):
         self.app = app
-        
+
+        self.id = uuid.uuid4()
+
         self.type = "skeleton"
         self.position = startPosition
         self.facingDirection = "left"
@@ -32,6 +35,14 @@ class Skeleton:
             "width": app.width / 12,
             "height": app.height / 9
         }
+
+    def __eq__(self, other):
+        if not isinstance(other, Skeleton): return False
+        return self.id == other.id
+    
+    def __hash__(self):
+        return hash(self.id)
+
 
     def getDistanceToPlayer(self):
         player_pos = self.app.player.position
@@ -102,7 +113,7 @@ class Skeleton:
         self.state = "dying"
         self.animationController.playAnimationOnce("death", onComplete=self.cleanUp)
 
-    def runSkeletonLogic(self):
+    def runLogic(self):
         if self.state == "dying":
             self.animationController.updateAnimation(self.app)
             return
@@ -122,7 +133,7 @@ class Skeleton:
         
         self.animationController.updateAnimation(self.app)
 
-    def drawSkeleton(self):
+    def draw(self):
         animationFrame = self.animationController.getAnimationFrame(self.app)
         if animationFrame is None:
             return
@@ -132,7 +143,7 @@ class Skeleton:
         else:
             spriteImage = CMUImage(animationFrame)
 
-        drawImage(
+        self.animationController.currentImage = drawImage(
             spriteImage,
             self.position[0],
             self.position[1],
