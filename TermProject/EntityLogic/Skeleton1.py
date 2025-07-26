@@ -1,6 +1,7 @@
 from cmu_graphics import *
 from PIL import Image
 import SpriteAnimations
+import HealthBarOOP
 import Config
 import math
 import uuid
@@ -16,12 +17,16 @@ class Skeleton:
         self.facingDirection = "left"
 
         self.state = "idle" 
+
+        self.HealthBar = HealthBarOOP.HealthBar(self.app,self)
         
         self.aggroRadius = 250 
         self.attackRadius = 50 
 
         self.movementSpeed = 45 
         self.health = 100
+        self.maxHealth = 100
+
         self.attackDamage = 10
 
         self.attackCooldown = 1.5
@@ -31,7 +36,7 @@ class Skeleton:
             SpriteAnimations.spriteAnimations["skeleton"], 
             SpriteAnimations.animationSettings["skeleton"]
         )
-        self.skeletonHitboxSize = {
+        self.hitboxSize = {
             "width": app.width / 12,
             "height": app.height / 9
         }
@@ -107,6 +112,8 @@ class Skeleton:
             self.onDeath()
 
     def cleanUp(self):
+        self.app.gcEntities["enemies"].add(self)
+        self.HealthBar.clearReferences()
         print("Skeleton cleanup called.")
 
     def onDeath(self):
@@ -143,11 +150,13 @@ class Skeleton:
         else:
             spriteImage = CMUImage(animationFrame)
 
-        self.animationController.currentImage = drawImage(
+        self.HealthBar.drawHp()
+
+        drawImage(
             spriteImage,
             self.position[0],
             self.position[1],
-            align="center",
-            width=self.skeletonHitboxSize["width"],
-            height=self.skeletonHitboxSize["height"]
+            align = "center",
+            width = self.hitboxSize["width"],
+            height = self.hitboxSize["height"]
         )

@@ -132,8 +132,6 @@ class AnimationController:
         self.currentFrame = 0
         self.frameCounter  = 0
         self.currentAnimation = None
-
-        self.currentImage = None #used for hitbox detection :D
     
     def _getPriority(self, animationObject):
         animationName = animationObject['name']

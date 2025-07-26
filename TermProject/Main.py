@@ -36,19 +36,32 @@ def onAppStart(app):
     app.playerSword = Sword.Sword(app)
 
     app.allEntities = { #entities are anything which have custom logic/behavior built into them.
-        "Enemies": set(),
-        "Players": set(),
-        "NonLiving": set()
+        "enemies": set(),
+        "players": set(),
+        "nonLiving": set()
     }
 
-    app.allEntities["Enemies"].add(app.skeleton)
-    app.allEntities["Players"].add(app.player)
-    app.allEntities["NonLiving"].add(app.playerSword)
+    app.gcEntities = {
+        "enemies": set(),
+        "players": set(),
+        "nonLiving": set()
+    }
+
+    app.allEntities["enemies"].add(app.skeleton)
+    app.allEntities["players"].add(app.player)
+    app.allEntities["nonLiving"].add(app.playerSword)
 
     applySettings(app)
 
 
     pass
+
+def gcEntities(app):
+    # garbage collects entities after the entity logic is all completed.
+    for EntityType in app.gcEntities:
+        for entity in app.gcEntities[EntityType]:
+            app.allEntities[EntityType].remove(entity)
+        app.gcEntities[EntityType].clear()
 
 def updateEntities(app, functionName, Params = None):
     # params will be a list which gets unpacked and passed
@@ -79,6 +92,7 @@ def onStep(app):
     #app.skeleton.runSkeletonLogic()
 
     updateEntities(app, "runLogic")
+    gcEntities(app)
 
 
 

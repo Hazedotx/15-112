@@ -4,7 +4,7 @@ import SpriteAnimations
 import Config
 import math
 import uuid
-
+import Helper
 
 
 class Sword:
@@ -17,12 +17,16 @@ class Sword:
 
         self.center = self.app.player.position
         self.position = [app.width/2, app.height/2]
+        self.swordAngle = 90,
+        self.attackCoolDown = 0.1
+        self.lastAttack = 0
+
+        self.mousePosition = [app.width/2, app.height/2]
         self.lastMousePosition = [app.width/2, app.height/2]
 
-        self.attackDamage = 10
-        self.swordSpeed = 10 # has to be going faster than 10 __/s in order for it do deal damage to enemies
-        self.lastAttack = 0 # this will track the cooldown state for the sword
-        self.clampRadius = 5 # the radius the sword traces around
+        self.attackDamage = 5
+        self.swordSpeed = 500 # has to be going faster than 10 __/s in order for it do deal damage to enemies
+        self.clampRadius = 50 # the radius the sword traces around
 
         self.animationController = SpriteAnimations.AnimationController(
             SpriteAnimations.spriteAnimations["sword"], 
@@ -32,8 +36,8 @@ class Sword:
         self.animationController.addAnimToStack("default")
 
         self.hitboxSize = {
-            "width": app.width / 10,
-            "height": app.height / 8
+            "width": 2 * 12,
+            "height": 3 * 12
         }
 
     def __eq__(self, other):
@@ -47,15 +51,13 @@ class Sword:
     def hitEnemies(self): # I dont think this breaks MVC rules bc i am not drawing anything. js checking hitbox
         hitList = set()
 
-        for enemy in self.app.allEntities["Enemies"]:
-            selfImage = self.animationController.currentImage
-            enemyImage = enemy.animationController.currentImage
-            if not selfImage or not enemyImage: continue
-
-            if selfImage.hitsShape(enemyImage):
+        for enemy in self.app.allEntities["enemies"]:
+            if Helper.getColliding(
+                self.position[0],self.position[1],self.hitboxSize["width"],self.hitboxSize["height"],
+                enemy.position[0],enemy.position[1],enemy.hitboxSize["width"],enemy.hitboxSize["height"]
+            ):
                 hitList.add(enemy)
 
-        #return a list of enemies the sword hit.
         return hitList
 
     def onMouseMove(self, mouseX, mouseY):
@@ -63,21 +65,39 @@ class Sword:
         # it will use that to calculate the speed of the sword. 
         #if the speed of the sword is fast enough, it will be able to deal damage to enemies.
 
-        deltaX = self.position[0] - mouseX
-        deltaY = self.position[1] - mouseY
+        self.lastMousePosition[0] = self.mousePosition[0]
+        self.lastMousePosition[1] = self.mousePosition[1]
+
+        self.mousePosition[0] = mouseX
+        self.mousePosition[1] = mouseY
+
+
+    def runLogic(self):
+        self.animationController.updateAnimation(self.app)
+
+        deltaX = self.lastMousePosition[0] - self.mousePosition[0]
+        deltaY = self.lastMousePosition[1] - self.mousePosition[1]
         deltaXY = math.sqrt(deltaX**2 + deltaY**2)
 
-        angle = math.atan((mouseX - self.center[0]) / (mouseY - self.center[1]))
-        self.position[0] = self.center[0] + self.clampRadius * math.cos(angle)
-        self.position[1] = self.center[0] + self.clampRadius * math.sin(angle)
+        self.swordAngle = math.atan2(self.mousePosition[1] - self.center[1], self.mousePosition[0] - self.center[0])
+        self.position[0] = self.center[0] + self.clampRadius * math.cos(self.swordAngle)
+        self.position[1] = self.center[1] + self.clampRadius * math.sin(self.swordAngle)
 
-        if self.swordSpeed <= deltaXY:
-            print("Can hurt enemy")
+        speedPerSecond = deltaXY * self.app.stepsPerSecond
+        currentTime = self.app.globalStates["totalTicks"]
+        cooldownInTicks = self.attackCoolDown * self.app.stepsPerSecond
+
+        if (speedPerSecond >= self.swordSpeed) and ((currentTime - self.lastAttack) >= cooldownInTicks):
+            #checks the cooldown and how fast the sword is going
+            #print("attack")
             for enemy in self.hitEnemies():
-                enemy.takeDamage(self.swordSpeed // 10)
+                enemy.takeDamage(self.attackDamage)
 
+                print(enemy.type, enemy.health)
+            self.lastAttack = currentTime
+            
+            
 
-        
 
     def draw(self):
         # make sure to update this soon.
@@ -94,7 +114,8 @@ class Sword:
             self.position[1],
             align = "center",
             width = self.hitboxSize["width"],
-            height = self.hitboxSize["height"]
+            height = self.hitboxSize["height"],
+            rotateAngle = 90 + math.degrees(self.swordAngle)
         )
 
     pass

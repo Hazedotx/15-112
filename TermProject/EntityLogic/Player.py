@@ -30,7 +30,7 @@ class Player:
 
         self.movementSpeed = 60
 
-        self.playerHitboxSize = {
+        self.hitboxSize = {
             "width": app.width / 10,
             "height": app.height / 8
         }
@@ -66,18 +66,18 @@ class Player:
         animationFrame = self.animationController.getAnimationFrame(self.app)
 
         if animationFrame == None:
-            print(animationFrame)
+            #print(animationFrame)
             return
         
         spriteImage = CMUImage(animationFrame if self.facingDirection == "right" else animationFrame.transpose(Image.FLIP_LEFT_RIGHT))
 
-        self.animationController.currentImage = drawImage(
+        drawImage(
             spriteImage,
             self.position[0],
             self.position[1],
             align = "center",
-            width = self.playerHitboxSize["width"],
-            height = self.playerHitboxSize["height"]
+            width = self.hitboxSize["width"],
+            height = self.hitboxSize["height"]
         )
     
     def keyPressedLogic(self, key):
