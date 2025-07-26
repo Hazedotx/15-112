@@ -1,4 +1,5 @@
 from cmu_graphics import *
+from PIL import Image as PILImage, ImageDraw
 import random
 import Config
 
@@ -36,6 +37,7 @@ class DungeonGenerator:
         self.gridHeight = gridHeight
         self.gridWidth = gridWidth
         self.grid = [[1 for _ in range(gridWidth)] for _ in range(gridHeight)]
+        self.dungeonImage = None
         self.root = None
         self.rooms = []
         self.app = app
@@ -145,18 +147,33 @@ class DungeonGenerator:
 
     # EXTERNAL FUNCTIONS FROM LIKE MAIN_________
 
-    def draw(self):
-        #draws the dungeon grid in Main.py
-        for y, row in enumerate(self.app.dungeonGrid):
+    def convertDungeonToImage(self):
+        # this will be used to convert the entire dungeon into a single reuseable image
+        # this is because drawing 2000+ shapes every frame is simply too much to handle lol
+        # this will use PIL images and then uh convert it to a CMU Image
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        gridWidth = Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
+        gridHeight = Config.STATIC_INFO["DungeonConfig"]["gridHeight"]
+        
+        mapSizeX = ts * gridWidth
+        mapSizeY = ts * gridHeight
+
+        pilImage = PILImage.new("RGB", (mapSizeX, mapSizeY))
+        drawContext =  ImageDraw.Draw(pilImage)
+        #https://www.geeksforgeeks.org/python/enumerate-in-python/
+        # also used PIL Docs
+
+        for y, row in enumerate(self.grid):
             for x, tile in enumerate(row):
-                ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
-                drawX = x * ts
-                drawY = y * ts
-                
-                if tile == 1: #1 is a wall
-                    drawRect(drawX, drawY, ts, ts, fill='darkslategrey')
-                else:# 0 is a floor
-                    drawRect(drawX, drawY, ts, ts, fill='dimgrey')
+                drawX, drawY = x * ts, y * ts
+                color = 'darkslategrey' if tile == 1 else 'dimgrey'
+                drawContext.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill=color)
+
+        self.dungeonImage = CMUImage(pilImage)
+
+    def draw(self):
+        drawImage(self.dungeonImage, 0, 0)
+        
 
     
 
