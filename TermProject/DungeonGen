@@ -1,4 +1,7 @@
+from cmu_graphics import *
 import random
+import Config
+
 
 tileMap = {
     1: "wall",
@@ -143,6 +146,17 @@ class DungeonGenerator:
     # EXTERNAL FUNCTIONS FROM LIKE MAIN_________
 
     def draw(self):
-        
+        #draws the dungeon grid in Main.py
+        for y, row in enumerate(self.app.dungeonGrid):
+            for x, tile in enumerate(row):
+                ts = Config["DungeonConfig"]["tileSize"]
+                drawX = x * ts
+                drawY = y * ts
+                
+                if tile == 1: #1 is a wall
+                    drawRect(drawX, drawY, ts, ts, fill='darkslategrey')
+                else:# 0 is a floor
+                    drawRect(drawX, drawY, ts, ts, fill='dimgrey')
+
     
 

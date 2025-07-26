@@ -3,7 +3,7 @@ from cmu_graphics import *
 import Helper
 import SpriteAnimations
 import Config
-import BinarySpacePartitioning
+import DungeonGen
 
 import EntityLogic.Player as Player
 import EntityLogic.Skeleton1 as Skeleton1
@@ -32,8 +32,10 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    dungeonGeneration = binar
-
+    dungeonGeneration = DungeonGen.DungeonGenerator(Config["DungeonConfig"]["gridHeight"], Config["DungeonConfig"]["gridWidth"])
+    app.dungeonGrid = dungeonGeneration.generate()
+    app.dungeonRooms = dungeonGeneration.rooms
+    
     app.player = Player.Player(app)
     app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
     app.playerSword = Sword.Sword(app)
@@ -85,6 +87,7 @@ def redrawAll(app):
     #app.player.drawPlayer()
     #app.skeleton.drawSkeleton()
 
+    DungeonGen.draw()
     updateEntities(app, "draw")
 
     pass
