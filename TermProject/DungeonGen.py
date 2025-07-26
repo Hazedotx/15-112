@@ -2,12 +2,36 @@ from cmu_graphics import *
 from PIL import Image as PILImage, ImageDraw
 import random
 import Config
-
+import copy
 
 tileMap = {
-    1: "wall",
-    2: "floor"
+    1: "defaultWall", # this is generated as the base for dungeon generation
+    2: "defaultFloor",# this is generated as the base for dungeon generation
+
+    #everything beneath here is generated on a second loop
+    # walls
+
+    3: "wall_edge_bottom_left",
+    4: "wall_edge_bottom_right",
+    5: "wall_edge_left",
+    6: "wall_edge_right",
+    7: "wall_edge_top_left",
+    8: "wall_edge_top_right",
+    9: "wall_edge_mid_left",
+    10: "wall_edge_mid_right",
+
+    # floors
+
+    11: "floor_1",
+    12: "floor_2",
+    13: "floor_3",
+    14: "floor_4",
+    15: "floor_5",
+    16: "floor_6",
+    17: "floor_7",
+    18: "floor_8"
 }
+
 
 # this was made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
 # "since i want to create bsp dungeon generator, guide me through the entire logical proccess."
@@ -145,6 +169,46 @@ class DungeonGenerator:
         return self.grid
     
 
+    def formatDungeon(self):
+        
+        gridCopy = copy.deepcopy(self.grid)
+
+        def getTile(y, x):
+            if 0 <= y < self.gridHeight and 0 <= x < self.gridWidth:
+                return gridCopy[y][x]
+            return None
+
+        for y in range(self.gridHeight):
+            for x in range(self.gridWidth):
+                currentTile = getTile(y, x)
+
+                if currentTile == 1:
+                    isFloorAbove = getTile(y - 1, x) == 0
+                    isFloorBelow = getTile(y + 1, x) == 0
+                    isFloorLeft = getTile(y, x - 1) == 0
+                    isFloorRight = getTile(y, x + 1) == 0
+
+                    if isFloorBelow and isFloorRight:
+                        self.grid[y][x] = 7 # wall_edge_top_left
+                    elif isFloorBelow and isFloorLeft:
+                        self.grid[y][x] = 8 # wall_edge_top_right
+                    elif isFloorAbove and isFloorRight:
+                        self.grid[y][x] = 3 # wall_edge_bottom_left
+                    elif isFloorAbove and isFloorLeft:
+                        self.grid[y][x] = 4 # wall_edge_bottom_right
+                    
+                    elif isFloorRight:
+                        self.grid[y][x] = 5
+                    elif isFloorLeft:
+                        self.grid[y][x] = 6
+                    
+                    # if no rules apply, ima just make it a middle wall tile
+                    
+                elif currentTile == 0:
+                    self.grid[y][x] = random.randint(11, 18)
+
+
+                    
     # EXTERNAL FUNCTIONS FROM LIKE MAIN_________
 
     def convertDungeonToImage(self):
