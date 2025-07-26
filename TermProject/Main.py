@@ -3,6 +3,7 @@ from cmu_graphics import *
 import Helper
 import SpriteAnimations
 import Config
+import BinarySpacePartitioning
 
 import EntityLogic.Player as Player
 import EntityLogic.Skeleton1 as Skeleton1
@@ -30,6 +31,8 @@ def onAppStart(app):
     app.globalStates = {
         "totalTicks": 0
     }
+
+    dungeonGeneration = binar
 
     app.player = Player.Player(app)
     app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])

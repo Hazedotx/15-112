@@ -10,6 +10,13 @@ STATIC_INFO = {
         "width": SCREEN_WIDTH,
         "height": SCREEN_HEIGHT
     },
+
+    "DungeonConfig": {
+        "tileSize": 24, # the tile size of each grid in pixels
+        "gridWidth": 50,
+        "gridHeight": 40
+    },
+
     "spriteAnimations": spriteAnimations
 }
 
