@@ -32,9 +32,13 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    dungeonGeneration = DungeonGen.DungeonGenerator(Config["DungeonConfig"]["gridHeight"], Config["DungeonConfig"]["gridWidth"])
-    app.dungeonGrid = dungeonGeneration.generate()
-    app.dungeonRooms = dungeonGeneration.rooms
+    app.dungeonGeneration = DungeonGen.DungeonGenerator(
+        app,
+        Config.STATIC_INFO["DungeonConfig"]["gridHeight"], 
+        Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
+    )
+    app.dungeonGrid = app.dungeonGeneration.generate()
+    app.dungeonRooms = app.dungeonGeneration.rooms
     
     app.player = Player.Player(app)
     app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
@@ -87,7 +91,7 @@ def redrawAll(app):
     #app.player.drawPlayer()
     #app.skeleton.drawSkeleton()
 
-    DungeonGen.draw()
+    app.dungeonGeneration.draw()
     updateEntities(app, "draw")
 
     pass

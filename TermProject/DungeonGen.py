@@ -149,7 +149,7 @@ class DungeonGenerator:
         #draws the dungeon grid in Main.py
         for y, row in enumerate(self.app.dungeonGrid):
             for x, tile in enumerate(row):
-                ts = Config["DungeonConfig"]["tileSize"]
+                ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
                 drawX = x * ts
                 drawY = y * ts
                 
