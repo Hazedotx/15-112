@@ -3,6 +3,7 @@ from PIL import Image as PILImage, ImageDraw
 import random
 import Config
 import copy
+import os
 
 tileMap = {
     1: "defaultWall", # this is generated as the base for dungeon generation
@@ -65,6 +66,23 @@ class DungeonGenerator:
         self.root = None
         self.rooms = []
         self.app = app
+        self.spriteImages = {}
+
+    def loadSprites(self):
+        # took this from my sprite animations.py logic and slightly altered it.
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        spriteFolderPath = "TermProject/MapSprites"
+
+        for tileId, tileName in tileMap.items():
+            if "default" in tileName:
+                continue
+
+            filePath = f"{spriteFolderPath}/{tileName}.png"
+            sprite = PILImage.open(filePath).convert("RGBA")
+            if sprite.size != (ts, ts):
+                sprite = sprite.resize((ts, ts))
+            self.spriteImages[tileId] = sprite
+            #print(f"Sprite Image {tileId} was not found in the MapSprites Folder")
 
     def recursivelySplit(self, node, depth):
         minSize = 10
@@ -183,26 +201,29 @@ class DungeonGenerator:
                 currentTile = getTile(y, x)
 
                 if currentTile == 1:
-                    isFloorAbove = getTile(y - 1, x) == 0
-                    isFloorBelow = getTile(y + 1, x) == 0
-                    isFloorLeft = getTile(y, x - 1) == 0
-                    isFloorRight = getTile(y, x + 1) == 0
+                    isFloorAbove = getTile(y - 1, x) in (0, 2)
+                    isFloorBelow = getTile(y + 1, x) in (0, 2)
+                    isFloorLeft = getTile(y, x - 1) in (0, 2)
+                    isFloorRight = getTile(y, x + 1) in (0, 2)
 
                     if isFloorBelow and isFloorRight:
-                        self.grid[y][x] = 7 # wall_edge_top_left
+                        self.grid[y][x] = 7
                     elif isFloorBelow and isFloorLeft:
-                        self.grid[y][x] = 8 # wall_edge_top_right
+                        self.grid[y][x] = 8
                     elif isFloorAbove and isFloorRight:
-                        self.grid[y][x] = 3 # wall_edge_bottom_left
+                        self.grid[y][x] = 3
                     elif isFloorAbove and isFloorLeft:
-                        self.grid[y][x] = 4 # wall_edge_bottom_right
+                        self.grid[y][x] = 4
                     
                     elif isFloorRight:
                         self.grid[y][x] = 5
                     elif isFloorLeft:
                         self.grid[y][x] = 6
-                    
-                    # if no rules apply, ima just make it a middle wall tile
+
+                    elif isFloorBelow:
+                        self.grid[y][x] = 9
+                    elif isFloorAbove:
+                        self.grid[y][x] = 10
                     
                 elif currentTile == 0:
                     self.grid[y][x] = random.randint(11, 18)
@@ -230,8 +251,13 @@ class DungeonGenerator:
         for y, row in enumerate(self.grid):
             for x, tile in enumerate(row):
                 drawX, drawY = x * ts, y * ts
-                color = 'darkslategrey' if tile == 1 else 'dimgrey'
-                drawContext.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill=color)
+
+                sprite = self.spriteImages.get(tile)
+                if sprite:
+                    drawX, drawY = x * ts, y * ts
+                    pilImage.paste(sprite, (drawX, drawY), sprite)
+                else:
+                    drawContext.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill="black")
 
         self.dungeonImage = CMUImage(pilImage)
 

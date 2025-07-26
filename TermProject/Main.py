@@ -38,7 +38,9 @@ def onAppStart(app):
         Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
     )
 
+    app.dungeonGenerator.loadSprites()
     app.dungeonGenerator.generate()
+    app.dungeonGenerator.formatDungeon()
     app.dungeonGenerator.convertDungeonToImage()
     
     app.player = Player.Player(app)
