@@ -7,32 +7,34 @@ import os
 
 tileMap = {
     0: "defaultFloor",
-    1: "defaultRock",# its just rock.
-    2: "floor_1",
-    3: "floor_2",
-    4: "floor_3",
-    5: "floor_4",
-    6: "floor_5",
-    7: "floor_6",
-    8: "floor_7",
-    9: "floor_8",
-    10: "wall_edge_bottom_left",
-    11: "wall_edge_bottom_right",
-    12: "wall_edge_left",
-    13: "wall_edge_mid_left",
-    14: "wall_edge_mid_right",
-    15: "wall_edge_right",
-    16: "wall_edge_top_left",
-    17: "wall_edge_top_right",
-    18: "wall_edge_tshape_bottom_left",
-    19: "wall_edge_tshape_bottom_right",
-    20: "wall_edge_tshape_left",
-    21: "wall_edge_tshape_right",
-    22: "wall",
-    23: "wall_top"
-    
-}
+    1: "defaultVoid",
+    2: "defaultWall",
+    3: "defaultHorizontalCorridor",# A floor tile in a horizontal corrdiro
+    4: "defaultVerticalCorridor",# Floor tile in a vert cooridor
 
+    5: "floor_1",
+    6: "floor_2",
+    7: "floor_3",
+    8: "floor_4",
+    9: "floor_5",
+    10: "floor_6",
+    11: "floor_7",
+    12: "floor_8",
+    13: "wall_edge_bottom_left",
+    14: "wall_edge_bottom_right",
+    15: "wall_edge_left",
+    16: "wall_edge_mid_left",
+    17: "wall_edge_mid_right",
+    18: "wall_edge_right",
+    19: "wall_edge_top_left",
+    20: "wall_edge_top_right",
+    21: "wall_edge_tshape_bottom_left",
+    22: "wall_edge_tshape_bottom_right",
+    23: "wall_edge_tshape_left",
+    24: "wall_edge_tshape_right",
+    25: "wall",
+    26: "wall_top"
+}
 
 # the dungeon generation LOGIC(not code) made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
 # "since i want to create bsp dungeon generator, guide me through the entire logical proccess."
@@ -146,14 +148,14 @@ class DungeonGenerator:
 
             if random.random() < 0.5:
                 for x in range(min(x1, x2), max(x1, x2) + 1):
-                    if y1 < self.gridHeight and x < self.gridWidth: self.grid[y1][x] = 0
+                    if y1 < self.gridHeight and x < self.gridWidth: self.grid[y1][x] = 3
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    if y < self.gridHeight and x2 < self.gridWidth: self.grid[y][x2] = 0
+                    if y < self.gridHeight and x2 < self.gridWidth: self.grid[y][x2] = 4
             else:
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    if y < self.gridHeight and x1 < self.gridWidth: self.grid[y][x1] = 0
+                    if y < self.gridHeight and x1 < self.gridWidth: self.grid[y][x1] = 4
                 for x in range(min(x1, x2), max(x1, x2) + 1):
-                    if y2 < self.gridHeight and x < self.gridWidth: self.grid[y2][x] = 0
+                    if y2 < self.gridHeight and x < self.gridWidth: self.grid[y2][x] = 3
         
         self.createCorridors(node.leftChild)
         self.createCorridors(node.rightChild)
@@ -181,11 +183,37 @@ class DungeonGenerator:
         
         return random.choice(possibleRooms) if possibleRooms else None
 
+    def addWalls(self):
+        # just turns everything that is eligible to be a wall into a wall so i dont have to guess later
+        # when i am decorating the dungeon
+        voidsToBecomeWalls = []
+        for y in range(self.gridHeight):
+            for x in range(self.gridWidth):
+
+                if self.grid[y][x] == 1:
+                    for dY in [-1, 0, 1]:
+                        for dX in [-1, 0, 1]:
+
+                            if dY == 0 and dX == 0:
+                                continue
+
+                            newY, newX = y + dY, x + dX
+                            if 0 <= newY < self.gridHeight and 0 <= newX < self.gridWidth:
+                                if self.grid[newY][newX] in [0, 3, 4]: 
+                                    voidsToBecomeWalls.append((y, x))
+                                    break
+                        else:
+                            continue
+                        break
+        for y, x in voidsToBecomeWalls:
+            self.grid[y][x] = 2
+
     def generate(self):
         self.root = Node(0, 0, self.gridHeight, self.gridWidth)
         self.recursivelySplit(self.root, 0)
         self.createRooms(self.root)
         self.createCorridors(self.root)
+        self.addWalls()
         return self.grid
     
 
@@ -197,56 +225,83 @@ class DungeonGenerator:
                 return tileMap.get(self.grid[y][x],None)
             return None
             
+        directionOffsets = {
+            "current": (0, 0),
+            "up": (-1, 0),
+            "down": (1, 0),
+            "left": (0, -1),
+            "right": (0, 1),
+            "topLeft": (-1, -1),
+            "topRight": (-1, 1),
+            "bottomLeft": (1, -1),
+            "bottomRight": (1, 1),
+        }
+
+        def isVoid(tile): return tile == "defaultVoid"
+        def isWall(tile): return tile == "defaultWall"
+
+        def isGround(tile): return tile in ["defaultFloor", "defaultHorizontalCorridor", "defaultVerticalCorridor"]
+        def isFloor(tile): return tile == "defaultFloor"
+        def isHoriCorridor(tile): return tile == "defaultHorizontalCorridor"
+        def isVertCorridor(tile): return tile == "defaultVerticalCorridor"
+        def isRoomOrHori(tile): return tile in ["defaultFloor", "defaultHorizontalCorridor"]
 
         for y in range(self.gridHeight):
             for x in range(self.gridWidth):
-                TileUp = getDefaultTile(y - 1, x)
-                TileDown = getDefaultTile(y + 1, x)
-                TileDownLeft = getDefaultTile(y + 1, x - 1)
-                TileLeft = getDefaultTile(y, x - 1)
-                TileRight = getDefaultTile(y, x + 1)
-                TileCurr = getDefaultTile(y,x)
+                
+                neighbors = {}
+                for name, (dy, dx) in directionOffsets.items():
+                    ny = y + dy
+                    nx = x + dx
+                    neighbors[name] = getDefaultTile(ny, nx)
 
-                if TileCurr == "defaultRock":
-
-                    floorUp = (TileUp == "defaultFloor")
-                    floorDown = (TileDown == "defaultFloor")
-                    floorLeft = (TileLeft == "defaultFloor")
-                    floorRight = (TileRight == "defaultFloor")
-
-                    if floorDown:
-                        #I am using sets so i can layer tiles and shit 
-                        self.gridLayer[y][x].add(22) # add the wall
-                        self.gridLayer[y - 1][x].add(23) # add the top part on the wall
-
-                        # logic for checking if the wall is a corner piece
-                        if not floorLeft:
-                            self.gridLayer[y][x].add(13)
-                        elif not floorRight:
-                            self.gridLayer[y][x].add(14)
-
-
-                    
+                if isWall(neighbors["current"]):
                     
 
-                    
-                elif TileCurr == "defaultFloor":
+                    if isGround(neighbors["down"]) or isGround(neighbors["up"]):
+                        self.gridLayer[y][x].add(25)
+                        self.gridLayer[y - 1][x].add(26)
 
-                    rockUp = (TileUp == "defaultRock")
-                    rockDown = (TileDown == "defaultRock")
-                    rockLeft = (TileLeft == "defaultRock")
-                    rockRight = (TileRight == "defaultRock")
+                    #checks if it is a wall on top.
+                            #self.gridLayer[y][x + 1].add(16)
+                            #self.gridLayer[y][x - 1].add(17)
 
-                    if rockDown:
-                        self.gridLayer[y][x].add(23)
-                        self.gridLayer[y + 1][x].add(22)
-                    elif rockLeft:
-                        self.gridLayer[y][x].add(13)
-                    elif rockRight:
-                        self.gridLayer[y][x].add(14)
+                    elif isWall(neighbors["up"]) or isWall(neighbors["down"]):
+                        # Edges of rooms which arent  corridors
+                        if isRoomOrHori(neighbors["right"]):
+                            self.gridLayer[y][x + 1].add(16)
+                            pass
+                        elif isRoomOrHori(neighbors["left"]):
+                            self.gridLayer[y][x - 1].add(17)
+                            pass
+
+                elif isGround(neighbors["current"]):
+
+                    self.gridLayer[y][x].add(random.randint(5,10))
 
 
-                    self.gridLayer[y][x].add(random.randint(2,9))
+                    if isVertCorridor(neighbors["current"]):
+
+                        if isWall(neighbors["bottomLeft"]) or isWall(neighbors["bottomRight"]):
+
+                            print("one or the other")
+
+                            if isWall(neighbors["bottomLeft"]):
+                                self.gridLayer[y + 1][x - 1].add(17)
+                            if isWall(neighbors["bottomRight"]):
+                                self.gridLayer[y + 1][x + 1].add(16)# wall_edge_mid_left
+
+                            if isWall(neighbors["left"]):
+                                self.gridLayer[y][x - 1].add(17)
+                            if isWall(neighbors["right"]):
+                                self.gridLayer[y][x + 1].add(16)
+
+                    pass
+                else:
+                    pass
+
+               
+
 
 
 
@@ -261,14 +316,15 @@ class DungeonGenerator:
         mapSizeX = ts * gridWidth
         mapSizeY = ts * gridHeight
 
-        baseFloorSprite = self.spriteImages.get(31) # this will be used to fill the gap in the t-shape stuff
-
         drawOrder = [
-            2, 3, 4, 5, 6, 7, 8, 9, # Base Floors
-            22,# Base Wall
-
-            23,# Wall Top
-            10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 # wall edges
+            # Floors
+            5, 6, 7, 8, 9, 10, 11, 12,
+            # Wall
+            25,
+            # Wall Edges
+            13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+            # wall railing
+            26
         ]
 
 
