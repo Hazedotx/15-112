@@ -28,16 +28,13 @@ tileMap = {
     19: "wall_edge_tshape_bottom_right",
     20: "wall_edge_tshape_left",
     21: "wall_edge_tshape_right",
-    22: "wall_left",
-    23: "wall_mid",
-    24: "wall_right",
-    25: "wall_top_left",
-    26: "wall_top_mid",
-    27: "wall_top_right"
+    22: "wall",
+    23: "wall_top"
+    
 }
 
 
-# this was made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
+# the dungeon generation LOGIC(not code) made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
 # "since i want to create bsp dungeon generator, guide me through the entire logical proccess."
 # it just explained me all the logic steps i needed and thats how i got this foundation
 
@@ -65,6 +62,8 @@ class DungeonGenerator:
         self.gridHeight = gridHeight
         self.gridWidth = gridWidth
         self.grid = [[1 for _ in range(gridWidth)] for _ in range(gridHeight)]
+        self.gridLayer = [[set() for _ in range(gridWidth)] for _ in range(gridHeight)]
+
         self.dungeonImage = None
         self.root = None
         self.rooms = []
@@ -191,18 +190,19 @@ class DungeonGenerator:
     
 
     def formatDungeon(self):
-        gridCopy = copy.deepcopy(self.grid)
 
         def getDefaultTile(y, x):
             #defaultWall or defaultFloor
             if 0 <= y < self.gridHeight and 0 <= x < self.gridWidth:
-                return tileMap.get(gridCopy[y][x],None)
+                return tileMap.get(self.grid[y][x],None)
             return None
+            
 
         for y in range(self.gridHeight):
             for x in range(self.gridWidth):
                 TileUp = getDefaultTile(y - 1, x)
                 TileDown = getDefaultTile(y + 1, x)
+                TileDownLeft = getDefaultTile(y + 1, x - 1)
                 TileLeft = getDefaultTile(y, x - 1)
                 TileRight = getDefaultTile(y, x + 1)
                 TileCurr = getDefaultTile(y,x)
@@ -215,11 +215,39 @@ class DungeonGenerator:
                     floorRight = (TileRight == "defaultFloor")
 
                     if floorDown:
-                        self.grid[y][x] = 24
+                        #I am using sets so i can layer tiles and shit 
+                        self.gridLayer[y][x].add(22) # add the wall
+                        self.gridLayer[y - 1][x].add(23) # add the top part on the wall
+
+                        # logic for checking if the wall is a corner piece
+                        if not floorLeft:
+                            self.gridLayer[y][x].add(13)
+                        elif not floorRight:
+                            self.gridLayer[y][x].add(14)
+
+
+                    
+                    
 
                     
                 elif TileCurr == "defaultFloor":
-                    self.grid[y][x] = random.randint(2,9)
+
+                    rockUp = (TileUp == "defaultRock")
+                    rockDown = (TileDown == "defaultRock")
+                    rockLeft = (TileLeft == "defaultRock")
+                    rockRight = (TileRight == "defaultRock")
+
+                    if rockDown:
+                        self.gridLayer[y][x].add(23)
+                        self.gridLayer[y + 1][x].add(22)
+                    elif rockLeft:
+                        self.gridLayer[y][x].add(13)
+                    elif rockRight:
+                        self.gridLayer[y][x].add(14)
+
+
+                    self.gridLayer[y][x].add(random.randint(2,9))
+
 
 
 
@@ -235,19 +263,34 @@ class DungeonGenerator:
 
         baseFloorSprite = self.spriteImages.get(31) # this will be used to fill the gap in the t-shape stuff
 
-        pilImage = PILImage.new("RGBA", (mapSizeX, mapSizeY))
+        drawOrder = [
+            2, 3, 4, 5, 6, 7, 8, 9, # Base Floors
+            22,# Base Wall
 
-        for y, row in enumerate(self.grid):
-            for x, tileId in enumerate(row):
+            23,# Wall Top
+            10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 # wall edges
+        ]
+
+
+        finalPilImage = PILImage.new("RGBA", (mapSizeX, mapSizeY))
+
+        for y, row in enumerate(self.gridLayer):
+            for x, assetIdSet in enumerate(row):
                 
-                tileName = tileMap.get(tileId, "")
-                sprite = self.spriteImages.get(tileId)
+                tileImage = PILImage.new("RGBA",(ts, ts), (0,0,0,0))
+
                 drawX, drawY = x * ts, y * ts
 
-                if sprite:
-                    pilImage.paste(sprite, (drawX, drawY), sprite)
+                for tileId in drawOrder:
+                    if tileId in assetIdSet:
+                        spriteToDraw = self.spriteImages.get(tileId)
+                        if spriteToDraw:
+                            tileImage = PILImage.alpha_composite(tileImage,spriteToDraw)
+
+                finalPilImage.paste(tileImage,(drawX,drawY), tileImage)
+            
         
-        self.dungeonImage = CMUImage(pilImage)
+        self.dungeonImage = CMUImage(finalPilImage)
 
     def draw(self):
         drawImage(self.dungeonImage, 0, 0)
