@@ -6,31 +6,34 @@ import copy
 import os
 
 tileMap = {
-    1: "defaultWall", # this is generated as the base for dungeon generation
-    2: "defaultFloor",# this is generated as the base for dungeon generation
-
-    #everything beneath here is generated on a second loop
-    # walls
-
-    3: "wall_edge_bottom_left",
-    4: "wall_edge_bottom_right",
-    5: "wall_edge_left",
-    6: "wall_edge_right",
-    7: "wall_edge_top_left",
-    8: "wall_edge_top_right",
-    9: "wall_edge_mid_left",
-    10: "wall_edge_mid_right",
-
-    # floors
-
-    11: "floor_1",
-    12: "floor_2",
-    13: "floor_3",
-    14: "floor_4",
-    15: "floor_5",
-    16: "floor_6",
-    17: "floor_7",
-    18: "floor_8"
+    0: "defaultFloor",
+    1: "defaultRock",# its just rock.
+    2: "floor_1",
+    3: "floor_2",
+    4: "floor_3",
+    5: "floor_4",
+    6: "floor_5",
+    7: "floor_6",
+    8: "floor_7",
+    9: "floor_8",
+    10: "wall_edge_bottom_left",
+    11: "wall_edge_bottom_right",
+    12: "wall_edge_left",
+    13: "wall_edge_mid_left",
+    14: "wall_edge_mid_right",
+    15: "wall_edge_right",
+    16: "wall_edge_top_left",
+    17: "wall_edge_top_right",
+    18: "wall_edge_tshape_bottom_left",
+    19: "wall_edge_tshape_bottom_right",
+    20: "wall_edge_tshape_left",
+    21: "wall_edge_tshape_right",
+    22: "wall_left",
+    23: "wall_mid",
+    24: "wall_right",
+    25: "wall_top_left",
+    26: "wall_top_mid",
+    27: "wall_top_right"
 }
 
 
@@ -188,81 +191,67 @@ class DungeonGenerator:
     
 
     def formatDungeon(self):
-        
         gridCopy = copy.deepcopy(self.grid)
 
-        def getTile(y, x):
+        def getDefaultTile(y, x):
+            #defaultWall or defaultFloor
             if 0 <= y < self.gridHeight and 0 <= x < self.gridWidth:
-                return gridCopy[y][x]
+                return tileMap.get(gridCopy[y][x],None)
             return None
 
         for y in range(self.gridHeight):
             for x in range(self.gridWidth):
-                currentTile = getTile(y, x)
+                TileUp = getDefaultTile(y - 1, x)
+                TileDown = getDefaultTile(y + 1, x)
+                TileLeft = getDefaultTile(y, x - 1)
+                TileRight = getDefaultTile(y, x + 1)
+                TileCurr = getDefaultTile(y,x)
 
-                if currentTile == 1:
-                    isFloorAbove = getTile(y - 1, x) in (0, 2)
-                    isFloorBelow = getTile(y + 1, x) in (0, 2)
-                    isFloorLeft = getTile(y, x - 1) in (0, 2)
-                    isFloorRight = getTile(y, x + 1) in (0, 2)
+                if TileCurr == "defaultRock":
 
-                    if isFloorBelow and isFloorRight:
-                        self.grid[y][x] = 7
-                    elif isFloorBelow and isFloorLeft:
-                        self.grid[y][x] = 8
-                    elif isFloorAbove and isFloorRight:
-                        self.grid[y][x] = 3
-                    elif isFloorAbove and isFloorLeft:
-                        self.grid[y][x] = 4
+                    floorUp = (TileUp == "defaultFloor")
+                    floorDown = (TileDown == "defaultFloor")
+                    floorLeft = (TileLeft == "defaultFloor")
+                    floorRight = (TileRight == "defaultFloor")
+
+                    if floorDown:
+                        self.grid[y][x] = 24
+
                     
-                    elif isFloorRight:
-                        self.grid[y][x] = 5
-                    elif isFloorLeft:
-                        self.grid[y][x] = 6
+                elif TileCurr == "defaultFloor":
+                    self.grid[y][x] = random.randint(2,9)
 
-                    elif isFloorBelow:
-                        self.grid[y][x] = 9
-                    elif isFloorAbove:
-                        self.grid[y][x] = 10
-                    
-                elif currentTile == 0:
-                    self.grid[y][x] = random.randint(11, 18)
 
 
                     
     # EXTERNAL FUNCTIONS FROM LIKE MAIN_________
 
     def convertDungeonToImage(self):
-        # this will be used to convert the entire dungeon into a single reuseable image
-        # this is because drawing 2000+ shapes every frame is simply too much to handle lol
-        # this will use PIL images and then uh convert it to a CMU Image
         ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
         gridWidth = Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
         gridHeight = Config.STATIC_INFO["DungeonConfig"]["gridHeight"]
-        
         mapSizeX = ts * gridWidth
         mapSizeY = ts * gridHeight
 
-        pilImage = PILImage.new("RGB", (mapSizeX, mapSizeY))
-        drawContext =  ImageDraw.Draw(pilImage)
-        #https://www.geeksforgeeks.org/python/enumerate-in-python/
-        # also used PIL Docs
+        baseFloorSprite = self.spriteImages.get(31) # this will be used to fill the gap in the t-shape stuff
+
+        pilImage = PILImage.new("RGBA", (mapSizeX, mapSizeY))
 
         for y, row in enumerate(self.grid):
-            for x, tile in enumerate(row):
+            for x, tileId in enumerate(row):
+                
+                tileName = tileMap.get(tileId, "")
+                sprite = self.spriteImages.get(tileId)
                 drawX, drawY = x * ts, y * ts
 
-                sprite = self.spriteImages.get(tile)
                 if sprite:
-                    drawX, drawY = x * ts, y * ts
                     pilImage.paste(sprite, (drawX, drawY), sprite)
-                else:
-                    drawContext.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill="black")
-
+        
         self.dungeonImage = CMUImage(pilImage)
 
     def draw(self):
         drawImage(self.dungeonImage, 0, 0)
+
         
 
     
