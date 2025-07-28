@@ -33,7 +33,10 @@ tileMap = {
     23: "wall_edge_tshape_left",
     24: "wall_edge_tshape_right",
     25: "wall",
-    26: "wall_top"
+    26: "wall_top",
+
+
+
 }
 
 # the dungeon generation LOGIC(not code) made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
@@ -223,7 +226,7 @@ class DungeonGenerator:
             #defaultWall or defaultFloor
             if 0 <= y < self.gridHeight and 0 <= x < self.gridWidth:
                 return tileMap.get(self.grid[y][x],None)
-            return None
+            return "defaultVoid"
             
         directionOffsets = {
             "current": (0, 0),
@@ -256,18 +259,41 @@ class DungeonGenerator:
                     neighbors[name] = getDefaultTile(ny, nx)
 
                 if isWall(neighbors["current"]):
-                    
 
+                    #16: "wall_edge_mid_left",  |__
+                    #17: "wall_edge_mid_right", __|
+                    #25: "wall",  |__|
+                    #26: "wall_top" __
+                    
+                    #adds the horizontal walls.
                     if isGround(neighbors["down"]) or isGround(neighbors["up"]):
                         self.gridLayer[y][x].add(25)
                         self.gridLayer[y - 1][x].add(26)
 
-                    #checks if it is a wall on top.
-                            #self.gridLayer[y][x + 1].add(16)
-                            #self.gridLayer[y][x - 1].add(17)
+                    
+                    # adds the vertical beams to the upper corner walls
+                    # the current placement for the beam is correct, but the determining proccess for finding a corner edge isnt amazing.
+                    # unfortunately, there isnt much i can do about this..
+                    if isVoid(neighbors["up"]) and isVoid(neighbors["topLeft"]) and isVoid(neighbors["left"]):
+                        self.gridLayer[y][x + 1].add(16)
+                        #left corner
+                        pass
+                    elif isVoid(neighbors["up"]) and isVoid(neighbors["topRight"]) and isVoid(neighbors["right"]):
+                        #right corner
+                        self.gridLayer[y][x - 1].add(17)
+                        pass
+                    else:
+                        pass
+                        #this is for debugging
+                        #self.gridLayer[y - 1][x].add(12)
+                        #self.gridLayer[y - 1][x + 1].add(12)
+                        #self.gridLayer[y][x + 1].add(12)
 
-                    elif isWall(neighbors["up"]) or isWall(neighbors["down"]):
-                        # Edges of rooms which arent  corridors
+
+
+                    if isWall(neighbors["down"]):
+                        # Edges of rooms
+
                         if isRoomOrHori(neighbors["right"]):
                             self.gridLayer[y][x + 1].add(16)
                             pass
@@ -279,26 +305,17 @@ class DungeonGenerator:
 
                     self.gridLayer[y][x].add(random.randint(5,10))
 
-
-                    if isVertCorridor(neighbors["current"]):
+                    if isVertCorridor(neighbors["current"]):# this is the vertical cooridor logic
 
                         if isWall(neighbors["bottomLeft"]) or isWall(neighbors["bottomRight"]):
 
-                            print("one or the other")
-
-                            if isWall(neighbors["bottomLeft"]):
-                                self.gridLayer[y + 1][x - 1].add(17)
-                            if isWall(neighbors["bottomRight"]):
-                                self.gridLayer[y + 1][x + 1].add(16)# wall_edge_mid_left
-
-                            if isWall(neighbors["left"]):
+                            if isWall(neighbors["left"]) and not isGround(neighbors["bottomLeft"]):
                                 self.gridLayer[y][x - 1].add(17)
-                            if isWall(neighbors["right"]):
+                            if isWall(neighbors["right"]) and not isGround(neighbors["bottomRight"]):
                                 self.gridLayer[y][x + 1].add(16)
 
                     pass
-                else:
-                    pass
+
 
                
 
@@ -334,6 +351,7 @@ class DungeonGenerator:
             for x, assetIdSet in enumerate(row):
                 
                 tileImage = PILImage.new("RGBA",(ts, ts), (0,0,0,0))
+                editedImage = False
 
                 drawX, drawY = x * ts, y * ts
 
@@ -341,7 +359,13 @@ class DungeonGenerator:
                     if tileId in assetIdSet:
                         spriteToDraw = self.spriteImages.get(tileId)
                         if spriteToDraw:
+                            editedImage = True
                             tileImage = PILImage.alpha_composite(tileImage,spriteToDraw)
+
+                if not editedImage:
+                    # make a non special empty void tile go from grey(when close to a special tile) to pure black when far enough away.
+                    # i am too lazy to do rn
+                    pass
 
                 finalPilImage.paste(tileImage,(drawX,drawY), tileImage)
             

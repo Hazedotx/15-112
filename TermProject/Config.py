@@ -12,9 +12,9 @@ STATIC_INFO = {
     },
 
     "DungeonConfig": {
-        "tileSize": 24, # the tile size of each grid in pixels
-        "gridWidth": 40,
-        "gridHeight": 40
+        "tileSize": 12, # the tile size of each grid in pixels
+        "gridWidth": 80,
+        "gridHeight": 60
     },
 
     "spriteAnimations": spriteAnimations
