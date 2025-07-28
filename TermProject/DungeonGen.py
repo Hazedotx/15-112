@@ -363,8 +363,9 @@ class DungeonGenerator:
                             tileImage = PILImage.alpha_composite(tileImage,spriteToDraw)
 
                 if not editedImage:
-                    # make a non special empty void tile go from grey(when close to a special tile) to pure black when far enough away.
-                    # i am too lazy to do rn
+                    color = (0, 0, 0, 255)
+                    tileImage = PILImage.new("RGBA", (ts, ts), color)
+                    
                     pass
 
                 finalPilImage.paste(tileImage,(drawX,drawY), tileImage)
