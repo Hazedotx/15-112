@@ -34,6 +34,7 @@ tileMap = {
     24: "wall_edge_tshape_right",
     25: "wall",
     26: "wall_top",
+    27: "black_box",
 
 
 
@@ -258,6 +259,8 @@ class DungeonGenerator:
                     nx = x + dx
                     neighbors[name] = getDefaultTile(ny, nx)
 
+                self.gridLayer[y][x].add(27) # sets the background to black by default.
+
                 if isWall(neighbors["current"]):
 
                     #16: "wall_edge_mid_left",  |__
@@ -334,6 +337,8 @@ class DungeonGenerator:
         mapSizeY = ts * gridHeight
 
         drawOrder = [
+            #black background
+            27,
             # Floors
             5, 6, 7, 8, 9, 10, 11, 12,
             # Wall
@@ -351,22 +356,13 @@ class DungeonGenerator:
             for x, assetIdSet in enumerate(row):
                 
                 tileImage = PILImage.new("RGBA",(ts, ts), (0,0,0,0))
-                editedImage = False
-
                 drawX, drawY = x * ts, y * ts
 
                 for tileId in drawOrder:
                     if tileId in assetIdSet:
                         spriteToDraw = self.spriteImages.get(tileId)
                         if spriteToDraw:
-                            editedImage = True
                             tileImage = PILImage.alpha_composite(tileImage,spriteToDraw)
-
-                if not editedImage:
-                    color = (0, 0, 0, 255)
-                    tileImage = PILImage.new("RGBA", (ts, ts), color)
-                    
-                    pass
 
                 finalPilImage.paste(tileImage,(drawX,drawY), tileImage)
             
