@@ -4,6 +4,7 @@ import Helper
 import SpriteAnimations
 import Config
 import DungeonGen
+import LoadingScreen
 
 import EntityLogic.Player as Player
 import EntityLogic.Skeleton1 as Skeleton1
@@ -46,8 +47,9 @@ def onAppStart(app):
 
     app.dungeonManager.baseDungeon.dungeon = baseDungeonGenerator
     app.dungeonManager.enableBaseDungeon()
-
     app.dungeonManager.baseDungeon.updateCloudedArea()
+
+    app.loadingScreen = LoadingScreen.LoadingScreenManager(app)
 
     
 
@@ -64,7 +66,7 @@ def onAppStart(app):
     }
 
     app.player = Player.Player(app)
-    app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
+    #app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
     app.playerSword = Sword.Sword(app)
 
     app.allEntities["players"].add(app.player)
@@ -102,8 +104,9 @@ def redrawAll(app):
     #app.skeleton.drawSkeleton()
 
     app.dungeonManager.draw()
+    updateEntities(app, "draw") # enemies can be drawn over the dungeon
+    app.loadingScreen.draw() # loading screen draws over enemies and dungeon
 
-    updateEntities(app, "draw")
 
     pass
 
@@ -112,6 +115,7 @@ def onStep(app):
     #app.player.runPlayerLogic()
     #app.skeleton.runSkeletonLogic()
 
+    app.loadingScreen.runLogic()
     app.dungeonManager.runLogic()
 
     updateEntities(app, "runLogic")
@@ -127,7 +131,8 @@ def onStep(app):
 
 #_________________________________________KEY EVENTS____________________________________________
 def onKeyPress(app,key):
-    app.player.keyPressedLogic(key)
+    app.player.keyPressedLogic(key)   
+    app.dungeonManager.keyPressedLogic(key)
     pass
 
 def onKeyRelease(app,key):

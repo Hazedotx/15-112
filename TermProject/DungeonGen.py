@@ -5,6 +5,7 @@ import Config
 import copy
 import os
 
+import LoadingScreen
 from EntityLogic import Skeleton1 as Skeleton1
 
 tileMap = {
@@ -135,22 +136,15 @@ class DungeonManager:
 
     def runLogic(self):
         if self.baseDungeon.enabled:
-            plrPosition = self.app.player.position
-            yCoord, xCoord = self.baseDungeon.dungeon.positionToGridCoordinates(plrPosition[1],plrPosition[0])
-
-            exploreResult = self.baseDungeon.explorePath(yCoord,xCoord)
-
-            if exploreResult == "NewTile":
-                actionType, actionInfo = self.baseDungeon.checkForAction(yCoord, xCoord)
-                self.baseDungeon.updateCloudedArea()
-
-                if actionType == "DungeonArena":
-                    Level = actionInfo.get("Level", 1)
-                    self.registerDungeonArena(Level)
-                    self.enableDungeonArena()
-                    #
+            self.app.player.movementSpeed = 0
+            pass
         elif self.activeDungeonArena.enabled:
+                self.app.player.movementSpeed = 120
                 self.activeDungeonArena.runLogic()
+
+
+    def keyPressedLogic(self, key):
+        self.baseDungeon.keyPressedLogic(key)
 
 
 
@@ -172,12 +166,41 @@ class BaseDungeon:
         self.cloudImage = None
         self.discoveredActionMap = {}
         self.discoveredMap = set()
-        self.playerGridY = 3
-        self.playerGridX = 3
+        self.playerGrid = [3, 3] # [y, x]
+
+        self.movementKeyMap = {
+            "w": (0, -1), #(x, y)
+            "s": (0, 1),
+            "a": (-1, 0),
+            "d": (1, 0)
+        }
         
 
+    def keyPressedLogic(self, key):
+        if not self.enabled: return
+        if not key in self.movementKeyMap: return 
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        # reverse it bc the movementKey Map is x, y
+        self.playerGrid[0] += self.movementKeyMap[key][1]
+        self.playerGrid[1] += self.movementKeyMap[key][0]
+        self.app.player.teleportPlayer((self.playerGrid[1] * ts,self.playerGrid[0] * ts ))
+        self.mainExploreLogic()
 
+        
+    def mainExploreLogic(self):
 
+        yCoord, xCoord = self.playerGrid[0], self.playerGrid[1]
+        exploreResult = self.explorePath(yCoord,xCoord)
+
+        if exploreResult == "NewTile":
+            actionType, actionInfo = self.checkForAction(yCoord, xCoord)
+            self.updateCloudedArea()
+
+            if actionType == "DungeonArena":
+                level = actionInfo.get("Level", 1)
+                self.app.dungeonManager.registerDungeonArena(level)
+
+                self.app.loadingScreen.startLoadingScreen(f"You stumbled into a level {level} dungeon. Defeat all enemies to escape.", 1.5, self.app.dungeonManager.enableDungeonArena,None)
 
     def fillActionMap(self):
         if not self.enabled: return
@@ -198,16 +221,13 @@ class BaseDungeon:
     def checkForAction(self, y, x):
         if not self.enabled: return
 
-        randomNumber = random.randint(1,5)
+        randomNumber = random.randint(1,10)
 
         if randomNumber == 1:
             difficultyPng = [28, 29, 30]
             difficultyLevel = random.randint(1,3)
             self.discoveredActionMap[(y, x)] = difficultyPng[difficultyLevel - 1]
             return "DungeonArena", {"Level": difficultyLevel}
-
-            
-            
 
         return None, None
 
@@ -259,7 +279,7 @@ class DungeonArena:
     # this will manage a dungeon, but also manage entities in that dungeon.
     def __init__(self, app, difficulty):
         self.app = app
-        self.dungeon = DungeonGenerator(app,20,30, 10, 1)
+        self.dungeon = DungeonGenerator(app,23,40, 10, 1)
         self.dungeon.generate()
         self.dungeon.formatDungeon()
         self.dungeon.convertDungeonToImage()
@@ -270,10 +290,9 @@ class DungeonArena:
     def spawnEnemies(self):
         if not self.enabled: return
 
-        for _ in range(self.difficultyLevel * 5):
+        for _ in range(self.difficultyLevel * 3):
             randomPosition = self.dungeon.getRandomSpawnPoint()
             Skeleton1.Skeleton(self.app, (randomPosition[0], randomPosition[1]))
-
         pass
 
     def startArena(self):
@@ -281,6 +300,9 @@ class DungeonArena:
         self.originalPlayerPosition = [self.app.player.position[0], self.app.player.position[1]]
         randomPlayerXPos, randomPlayerYPos = self.dungeon.getRandomSpawnPoint()
         self.app.player.teleportPlayer((randomPlayerXPos, randomPlayerYPos))
+
+        self.app.player.changePlayerState("ArenaInProgress")
+
         self.spawnEnemies()
 
         pass
@@ -293,7 +315,9 @@ class DungeonArena:
 
         self.app.dungeonManager.unRegisterDungeon()
         self.app.dungeonManager.enableBaseDungeon()
+        self.app.player.changePlayerState("ArenaFinished") # sets player movement speed back to 0
         self.app.player.teleportPlayer(self.originalPlayerPosition)
+        
 
         pass
 

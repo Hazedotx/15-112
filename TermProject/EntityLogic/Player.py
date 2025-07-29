@@ -42,6 +42,8 @@ class Player:
 
         self.animationInfo = SpriteAnimations
 
+        self.changePlayerState("InitalizePlayer")
+
     def __eq__(self, other):
         if not isinstance(other, Player): return False
         return self.id == other.id
@@ -63,8 +65,16 @@ class Player:
     def teleportPlayer(self, newPosition):
         # will set the players position to a newPosition.
 
-        self.position[0] = newPosition[0]
-        self.position[1] = newPosition[1]
+        self.position[0] = newPosition[0] + self.hitboxSize["width"] / 2 - 7 # - 7 is bc of the non visible hitbox increasing the size of the width so it looks off
+        self.position[1] = newPosition[1] 
+
+    def changePlayerState(self, newState):
+        if newState == "InitalizePlayer":
+            self.movementSpeed = 0
+        elif newState == "ArenaInProgress":
+            self.movementSpeed = 120
+        elif newState == "ArenaFinished":
+            self.movementSpeed = 0
 
     def draw(self):
         # make sure to update this soon.
