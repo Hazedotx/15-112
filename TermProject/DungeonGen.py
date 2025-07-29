@@ -36,9 +36,21 @@ tileMap = {
     26: "wall_top",
     27: "black_box",
 
-
-
+    28: "skull"
 }
+
+drawOrder = [
+    #black background
+    27,
+    # Floors
+    5, 6, 7, 8, 9, 10, 11, 12,
+    # Wall
+    25,
+    # Wall Edges
+    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+    # wall railing
+    26
+]
 
 # the dungeon generation LOGIC(not code) made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
 # "since i want to create bsp dungeon generator, guide me through the entire logical proccess."
@@ -63,18 +75,16 @@ class Room:
     def center(self):
         return self.y + self.height // 2, self.x + self.width // 2
 
-class DungeonGenerator:
-    def __init__(self, app, gridHeight, gridWidth):
-        self.gridHeight = gridHeight
-        self.gridWidth = gridWidth
-        self.grid = [[1 for _ in range(gridWidth)] for _ in range(gridHeight)]
-        self.gridLayer = [[set() for _ in range(gridWidth)] for _ in range(gridHeight)]
-
-        self.dungeonImage = None
-        self.root = None
-        self.rooms = []
+class DungeonManager:
+    def __init__(self, app):
         self.app = app
+
         self.spriteImages = {}
+        self.loadSprites()
+
+        self.baseDungeon = BaseDungeon(self.app)
+        self.activeDungeonArena = None
+
 
     def loadSprites(self):
         # took this from my sprite animations.py logic and slightly altered it.
@@ -91,6 +101,181 @@ class DungeonGenerator:
                 sprite = sprite.resize((ts, ts))
             self.spriteImages[tileId] = sprite
             #print(f"Sprite Image {tileId} was not found in the MapSprites Folder")
+
+    def registerDungeonArena(self):
+        if self.activeDungeonArena:
+            print("Cannot override running dungeon")
+        else:
+            self.activeDungeonArena = DungeonArena(self.app)
+            # dungeon arena is initialized to be false beforehand so nothing will happen until we change its state
+
+    def unRegisterDungeon(self):
+        if self.activeDungeonArena:
+            self.activeDungeonArena.enabled = False
+            self.activeDungeonArena = None
+    
+    def update(self):
+        if self.activeDungeonArena:
+            self.activeDungeonArena.runLogic()
+
+    def enableDungeonArena(self):
+        if self.activeDungeonArena:
+            self.activeDungeonArena.enabled = True
+            if self.baseDungeon:
+                self.baseDungeon.enabled = False
+    
+    def enableBaseDungeon(self):
+        self.baseDungeon.enabled = True
+        if self.activeDungeonArena:
+            self.activeDungeonArena.enabled = False
+
+    def runLogic(self):
+        if self.baseDungeon.enabled:
+            plrPosition = self.app.player.position
+            yCoord, xCoord = self.baseDungeon.dungeon.positionToGridCoordinates(plrPosition[1],plrPosition[0])
+
+            self.baseDungeon.explorePath(yCoord,xCoord)
+
+    def draw(self):
+        if self.baseDungeon and self.baseDungeon.enabled:
+            self.baseDungeon.draw()
+        elif self.activeDungeonArena and self.activeDungeonArena.enabled:
+            self.activeDungeonArena.draw()
+
+
+
+class BaseDungeon:
+    def __init__(self, app):
+        self.app = app
+        self.enabled = False
+        self.dungeon = None
+        self.cloudImage = None
+        self.discoveredActionMap = {}
+        self.discoveredMap = set()
+        self.playerGridY = 3
+        self.playerGridX = 3
+        
+
+
+
+
+    def fillActionMap(self):
+        if not self.enabled: return
+        pass
+
+    def fillDiscoveredMap(self):
+        if not self.enabled: return
+        pass
+
+    def explorePath(self, y, x):
+        if not self.enabled: return
+
+        if not (y, x) in self.discoveredMap:
+            self.discoveredMap.add((y, x))
+
+            self.updateCloudedArea()
+
+    def checkForAction(self, y, x):
+        if not self.enabled: return
+
+        if random.randint(1,2) == 1:
+            self.discoveredActionMap[(y, x)] = 28 #sets emoji to skull
+            
+            
+            
+
+        pass
+
+    def checkWinCondition(self):
+        if not self.enabled: return
+        pass
+
+    def updateCloudedArea(self):
+        if not self.dungeon: return
+
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        gridHeight = self.dungeon.gridHeight
+        gridWidth = self.dungeon.gridWidth
+
+        imageWidth = gridWidth * ts
+        imageHeight = gridHeight * ts
+
+        cloudPILImage = PILImage.new("RGBA", (imageWidth, imageHeight), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(cloudPILImage)
+
+        for y in range(gridHeight):
+            for x in range(gridWidth):
+                discoveredAction = self.discoveredActionMap.get((y, x), None)
+                drawX, drawY = x * ts, y * ts
+
+                if (y, x) not in self.discoveredMap:
+                    draw.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill=(0, 0, 0, 180)) # 0 -> 255 for opacity 4th param
+
+                if discoveredAction != None:
+                    tileImage = PILImage.alpha_composite(tileImage,self.app.dungeonManager.spriteImages)
+                    cloudPILImage.paste(tileImage,(drawX,drawY), tileImage)
+                    
+
+        self.cloudImage = CMUImage(cloudPILImage)
+
+    def draw(self):
+        if not self.enabled: return
+
+        if self.dungeon:
+            self.dungeon.draw()
+
+        if self.cloudImage:
+            drawImage(self.cloudImage, 0, 0)
+    
+
+class DungeonArena:
+    # this will manage a dungeon, but also manage entities in that dungeon.
+    def __init__(self, app):
+        self.dungeon = DungeonGenerator(app,30,30)
+        self.dungeon.generate()
+        self.dungeon.formatDungeon()
+        self.dungeon.convertDungeonToImage()
+
+        self.enabled = False
+        self.enemies = set()
+        self.difficultyLevel = 1
+
+    def spawnEnemies(self):
+        if not self.enabled: return
+        pass
+
+    def managePlayer(self):
+        if not self.enabled: return
+        pass
+
+    def endFight(self):
+        if not self.enabled: return
+        pass
+
+    def runLogic(self):
+        if not self.enabled: return
+        pass
+
+    def draw(self):
+        if not self.enabled: return
+        pass
+    
+
+
+
+
+class DungeonGenerator:
+    # all this will do is generate the dungeon
+    def __init__(self, app, gridHeight, gridWidth):
+        self.gridHeight = gridHeight
+        self.gridWidth = gridWidth
+        self.grid = [[1 for _ in range(gridWidth)] for _ in range(gridHeight)]
+        self.gridLayer = [[set() for _ in range(gridWidth)] for _ in range(gridHeight)]
+
+        self.dungeonImage = None
+        self.root = None
+        self.rooms = []
+        self.app = app
 
     def recursivelySplit(self, node, depth):
         minSize = 10
@@ -220,7 +405,6 @@ class DungeonGenerator:
         self.addWalls()
         return self.grid
     
-
     def formatDungeon(self):
 
         def getDefaultTile(y, x):
@@ -320,14 +504,26 @@ class DungeonGenerator:
                     pass
 
 
-               
+    #________________GLOBAL FUNCTIONS______________________
 
+    def positionToGridCoordinates(self, y, x):
+        # this will take in a tuple representing the position and return the grid coordinate equivalent
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        xCoord = int(x // ts) if x != 0 else 0
+        yCoord = int(y // ts) if y != 0 else 0
+        return yCoord, xCoord
+    
+    def gridTypeAtCoordinate(self, y, x):
+        #this is a safe way to get the type of a tile located at x, y
+        if not (0 <= y < len(self.grid)): return "defaultVoid"
+        if not (0 <= x < len(self.grid[0])): return "defaultVoid"
+        return self.grid[y][x] 
+    
+    def isWallAtCoordinate(self, y, x):
+        # this will check if the coordinate is a wall. This will be used for collision detection for entities
+        tileType = tileMap.get(self.gridTypeAtCoordinate(y, x), None)
+        return tileType in ["defaultVoid", "defaultWall"]
 
-
-
-
-                    
-    # EXTERNAL FUNCTIONS FROM LIKE MAIN_________
 
     def convertDungeonToImage(self):
         ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
@@ -335,20 +531,6 @@ class DungeonGenerator:
         gridHeight = Config.STATIC_INFO["DungeonConfig"]["gridHeight"]
         mapSizeX = ts * gridWidth
         mapSizeY = ts * gridHeight
-
-        drawOrder = [
-            #black background
-            27,
-            # Floors
-            5, 6, 7, 8, 9, 10, 11, 12,
-            # Wall
-            25,
-            # Wall Edges
-            13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-            # wall railing
-            26
-        ]
-
 
         finalPilImage = PILImage.new("RGBA", (mapSizeX, mapSizeY))
 
@@ -360,7 +542,7 @@ class DungeonGenerator:
 
                 for tileId in drawOrder:
                     if tileId in assetIdSet:
-                        spriteToDraw = self.spriteImages.get(tileId)
+                        spriteToDraw = self.app.dungeonManager.spriteImages.get(tileId)
                         if spriteToDraw:
                             tileImage = PILImage.alpha_composite(tileImage,spriteToDraw)
 

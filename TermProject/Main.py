@@ -32,16 +32,23 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    app.dungeonGenerator = DungeonGen.DungeonGenerator(
+    app.dungeonManager = DungeonGen.DungeonManager(app)
+
+    baseDungeonGenerator = DungeonGen.DungeonGenerator(
         app,
-        Config.STATIC_INFO["DungeonConfig"]["gridHeight"], 
+        Config.STATIC_INFO["DungeonConfig"]["gridHeight"],
         Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
     )
 
-    app.dungeonGenerator.loadSprites()
-    app.dungeonGenerator.generate()
-    app.dungeonGenerator.formatDungeon()
-    app.dungeonGenerator.convertDungeonToImage()
+    baseDungeonGenerator.generate()
+    baseDungeonGenerator.formatDungeon()
+    baseDungeonGenerator.convertDungeonToImage()
+
+    app.dungeonManager.baseDungeon.dungeon = baseDungeonGenerator
+    app.dungeonManager.enableBaseDungeon()
+
+    app.dungeonManager.baseDungeon.updateCloudedArea()
+
     
     app.player = Player.Player(app)
     app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
@@ -94,7 +101,8 @@ def redrawAll(app):
     #app.player.drawPlayer()
     #app.skeleton.drawSkeleton()
 
-    app.dungeonGenerator.draw()
+    app.dungeonManager.draw()
+
     updateEntities(app, "draw")
 
     pass
@@ -103,6 +111,8 @@ def onStep(app):
     app.globalStates["totalTicks"] += 1
     #app.player.runPlayerLogic()
     #app.skeleton.runSkeletonLogic()
+
+    app.dungeonManager.runLogic()
 
     updateEntities(app, "runLogic")
     gcEntities(app)
