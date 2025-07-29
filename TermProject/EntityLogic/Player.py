@@ -1,6 +1,7 @@
 from cmu_graphics import *
 from PIL import Image
 import SpriteAnimations
+import HealthBarOOP
 import Config
 import uuid
 
@@ -18,6 +19,10 @@ class Player:
         self.keysPressed = set()
         self.facingDirection = "right"
 
+        self.HealthBar = HealthBarOOP.HealthBar(self.app,self)
+        self.health = 100
+        self.maxHealth = 100
+
         self.animationController = SpriteAnimations.AnimationController(SpriteAnimations.spriteAnimations["player"], SpriteAnimations.animationSettings["player"])
 
         # adding MKM here incase i have an enemy which disorients the player
@@ -28,11 +33,11 @@ class Player:
             "d": (1, 0)
         }
 
-        self.movementSpeed = 60
+        self.movementSpeed = 120
 
         self.hitboxSize = {
-            "width": app.width / 10,
-            "height": app.height / 8
+            "width": 50,
+            "height": 70
         }
 
         self.animationInfo = SpriteAnimations
@@ -79,6 +84,8 @@ class Player:
             width = self.hitboxSize["width"],
             height = self.hitboxSize["height"]
         )
+
+        self.HealthBar.drawHp()
     
     def keyPressedLogic(self, key):
         self.keysPressed.add(key)
@@ -106,6 +113,7 @@ class Player:
         return False
     
     def takeDamage(self, damageAmount):
+        self.health = max(self.health - damageAmount,0)
         print("make playet take damage")
     
 

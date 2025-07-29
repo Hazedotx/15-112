@@ -50,9 +50,6 @@ def onAppStart(app):
     app.dungeonManager.baseDungeon.updateCloudedArea()
 
     
-    app.player = Player.Player(app)
-    app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
-    app.playerSword = Sword.Sword(app)
 
     app.allEntities = { #entities are anything which have custom logic/behavior built into them.
         "enemies": set(),
@@ -66,7 +63,10 @@ def onAppStart(app):
         "nonLiving": set()
     }
 
-    app.allEntities["enemies"].add(app.skeleton)
+    app.player = Player.Player(app)
+    app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
+    app.playerSword = Sword.Sword(app)
+
     app.allEntities["players"].add(app.player)
     app.allEntities["nonLiving"].add(app.playerSword)
 

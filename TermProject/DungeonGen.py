@@ -5,6 +5,8 @@ import Config
 import copy
 import os
 
+from EntityLogic import Skeleton1 as Skeleton1
+
 tileMap = {
     0: "defaultFloor",
     1: "defaultVoid",
@@ -36,9 +38,9 @@ tileMap = {
     26: "wall_top",
     27: "black_box",
 
-    27: "easy_difficulty_dungeon",
-    28: "medium_difficulty_dungeon",
-    28: "max_difficulty_dungeon"
+    28: "easy_difficulty_dungeon",
+    29: "medium_difficulty_dungeon",
+    30: "max_difficulty_dungeon"
 }
 
 drawOrder = [
@@ -104,11 +106,11 @@ class DungeonManager:
             self.spriteImages[tileId] = sprite
             #print(f"Sprite Image {tileId} was not found in the MapSprites Folder")
 
-    def registerDungeonArena(self):
+    def registerDungeonArena(self, difficulty):
         if self.activeDungeonArena:
             print("Cannot override running dungeon")
         else:
-            self.activeDungeonArena = DungeonArena(self.app)
+            self.activeDungeonArena = DungeonArena(self.app, difficulty)
             # dungeon arena is initialized to be false beforehand so nothing will happen until we change its state
 
     def unRegisterDungeon(self):
@@ -122,7 +124,7 @@ class DungeonManager:
 
     def enableDungeonArena(self):
         if self.activeDungeonArena:
-            self.activeDungeonArena.enabled = True
+            self.activeDungeonArena.startArena()
             if self.baseDungeon:
                 self.baseDungeon.enabled = False
     
@@ -136,7 +138,23 @@ class DungeonManager:
             plrPosition = self.app.player.position
             yCoord, xCoord = self.baseDungeon.dungeon.positionToGridCoordinates(plrPosition[1],plrPosition[0])
 
-            self.baseDungeon.explorePath(yCoord,xCoord)
+            exploreResult = self.baseDungeon.explorePath(yCoord,xCoord)
+
+            if exploreResult == "NewTile":
+                actionType, actionInfo = self.baseDungeon.checkForAction(yCoord, xCoord)
+                self.baseDungeon.updateCloudedArea()
+
+                if actionType == "DungeonArena":
+                    Level = actionInfo.get("Level", 1)
+                    self.registerDungeonArena(Level)
+                    self.enableDungeonArena()
+                    #
+        elif self.activeDungeonArena.enabled:
+                self.activeDungeonArena.runLogic()
+
+
+
+
 
     def draw(self):
         if self.baseDungeon and self.baseDungeon.enabled:
@@ -170,22 +188,28 @@ class BaseDungeon:
         pass
 
     def explorePath(self, y, x):
-        if not self.enabled: return
+        if not self.enabled: return "AlreadyDiscovered"
 
         if not (y, x) in self.discoveredMap:
             self.discoveredMap.add((y, x))
-            self.checkForAction(y, x)
-            self.updateCloudedArea()
+            return "NewTile"
+        return "AlreadyDiscovered"
 
     def checkForAction(self, y, x):
         if not self.enabled: return
 
-        if random.randint(1,2) == 1:
-            self.discoveredActionMap[(y, x)] = 28 #sets emoji to max_difficulty_dungeon
+        randomNumber = random.randint(1,5)
+
+        if randomNumber == 1:
+            difficultyPng = [28, 29, 30]
+            difficultyLevel = random.randint(1,3)
+            self.discoveredActionMap[(y, x)] = difficultyPng[difficultyLevel - 1]
+            return "DungeonArena", {"Level": difficultyLevel}
+
             
             
 
-        pass
+        return None, None
 
     def checkWinCondition(self):
         if not self.enabled: return
@@ -233,34 +257,59 @@ class BaseDungeon:
 
 class DungeonArena:
     # this will manage a dungeon, but also manage entities in that dungeon.
-    def __init__(self, app):
-        self.dungeon = DungeonGenerator(app,30,30)
+    def __init__(self, app, difficulty):
+        self.app = app
+        self.dungeon = DungeonGenerator(app,20,30, 10, 1)
         self.dungeon.generate()
         self.dungeon.formatDungeon()
         self.dungeon.convertDungeonToImage()
-
+        self.originalPlayerPosition = None
         self.enabled = False
-        self.enemies = set()
-        self.difficultyLevel = 1
+        self.difficultyLevel = difficulty
 
     def spawnEnemies(self):
         if not self.enabled: return
+
+        for _ in range(self.difficultyLevel * 5):
+            randomPosition = self.dungeon.getRandomSpawnPoint()
+            Skeleton1.Skeleton(self.app, (randomPosition[0], randomPosition[1]))
+
         pass
 
-    def managePlayer(self):
-        if not self.enabled: return
+    def startArena(self):
+        self.enabled = True
+        self.originalPlayerPosition = [self.app.player.position[0], self.app.player.position[1]]
+        randomPlayerXPos, randomPlayerYPos = self.dungeon.getRandomSpawnPoint()
+        self.app.player.teleportPlayer((randomPlayerXPos, randomPlayerYPos))
+        self.spawnEnemies()
+
         pass
 
-    def endFight(self):
+    def endFight(self, result):
         if not self.enabled: return
+
+        for enemy in self.app.allEntities["enemies"]:
+            enemy.cleanUp()
+
+        self.app.dungeonManager.unRegisterDungeon()
+        self.app.dungeonManager.enableBaseDungeon()
+        self.app.player.teleportPlayer(self.originalPlayerPosition)
+
         pass
 
     def runLogic(self):
         if not self.enabled: return
+
+        if len(self.app.allEntities["enemies"]) == 0:
+            self.endFight("Victory")
+        elif (self.app.player.health) <= 0:
+            self.endFight("Loss")
+
         pass
 
     def draw(self):
         if not self.enabled: return
+        self.dungeon.draw()
         pass
     
 
@@ -269,20 +318,25 @@ class DungeonArena:
 
 class DungeonGenerator:
     # all this will do is generate the dungeon
-    def __init__(self, app, gridHeight, gridWidth):
+    def __init__(self, app, gridHeight, gridWidth, minRoomSize = 10, maxRoomSplits = 4):
         self.gridHeight = gridHeight
         self.gridWidth = gridWidth
+        self.minRoomSize = 10
+        self.maxRoomSplits = maxRoomSplits
+
+
         self.grid = [[1 for _ in range(gridWidth)] for _ in range(gridHeight)]
         self.gridLayer = [[set() for _ in range(gridWidth)] for _ in range(gridHeight)]
 
         self.dungeonImage = None
         self.root = None
         self.rooms = []
+        self.walkableTiles = []
         self.app = app
 
     def recursivelySplit(self, node, depth):
-        minSize = 10
-        maxDepth = 4
+        minSize = self.minRoomSize
+        maxDepth = self.maxRoomSplits
 
         if depth >= maxDepth or (node.height < minSize and node.width < minSize):
             return
@@ -406,7 +460,15 @@ class DungeonGenerator:
         self.createRooms(self.root)
         self.createCorridors(self.root)
         self.addWalls()
+        self.populateWalkableTiles()
         return self.grid
+    
+    def populateWalkableTiles(self):
+        # this function will go through all of the tiles in the 2d list and make a 1d list with all of the walkable tiles
+        for y in range(self.gridHeight):
+            for x in range(self.gridWidth):
+                if not self.isWallAtCoordinate(y, x):
+                    self.walkableTiles.append((y, x))
     
     def formatDungeon(self):
 
@@ -526,6 +588,22 @@ class DungeonGenerator:
         # this will check if the coordinate is a wall. This will be used for collision detection for entities
         tileType = tileMap.get(self.gridTypeAtCoordinate(y, x), None)
         return tileType in ["defaultVoid", "defaultWall"]
+    
+    def getRandomSpawnPoint(self):
+        # will find a random valid spawn point for an entity to spawn on.
+        # it returns stuff in pixels, not 2d list coordinates
+        if not self.walkableTiles: return (0, 0)
+
+        gridY, gridX = random.choice(self.walkableTiles)
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+
+        xPixel = (gridX * ts) + (ts // 2)
+        yPixel = (gridY * ts) + (ts // 2)
+
+        return (xPixel, yPixel)
+
+
+
 
 
     def convertDungeonToImage(self):

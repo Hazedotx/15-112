@@ -13,8 +13,10 @@ class Skeleton:
         self.id = uuid.uuid4()
 
         self.type = "skeleton"
-        self.position = startPosition
+        self.position = [startPosition[0], startPosition[1]]
         self.facingDirection = "left"
+
+        app.allEntities["enemies"].add(self)
 
         self.state = "idle" 
 
@@ -37,8 +39,8 @@ class Skeleton:
             SpriteAnimations.animationSettings["skeleton"]
         )
         self.hitboxSize = {
-            "width": app.width / 12,
-            "height": app.height / 9
+            "width": 50,
+            "height": 70
         }
 
     def __eq__(self, other):
