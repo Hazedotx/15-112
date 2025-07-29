@@ -36,7 +36,9 @@ tileMap = {
     26: "wall_top",
     27: "black_box",
 
-    28: "skull"
+    27: "easy_difficulty_dungeon",
+    28: "medium_difficulty_dungeon",
+    28: "max_difficulty_dungeon"
 }
 
 drawOrder = [
@@ -172,15 +174,14 @@ class BaseDungeon:
 
         if not (y, x) in self.discoveredMap:
             self.discoveredMap.add((y, x))
-
+            self.checkForAction(y, x)
             self.updateCloudedArea()
 
     def checkForAction(self, y, x):
         if not self.enabled: return
 
         if random.randint(1,2) == 1:
-            self.discoveredActionMap[(y, x)] = 28 #sets emoji to skull
-            
+            self.discoveredActionMap[(y, x)] = 28 #sets emoji to max_difficulty_dungeon
             
             
 
@@ -212,8 +213,10 @@ class BaseDungeon:
                     draw.rectangle([drawX, drawY, drawX + ts, drawY + ts], fill=(0, 0, 0, 180)) # 0 -> 255 for opacity 4th param
 
                 if discoveredAction != None:
-                    tileImage = PILImage.alpha_composite(tileImage,self.app.dungeonManager.spriteImages)
-                    cloudPILImage.paste(tileImage,(drawX,drawY), tileImage)
+                    tileImage = self.app.dungeonManager.spriteImages.get(discoveredAction, None)
+                    if tileImage:
+                        print("tile image")
+                        cloudPILImage.paste(tileImage,(drawX,drawY), tileImage)
                     
 
         self.cloudImage = CMUImage(cloudPILImage)
