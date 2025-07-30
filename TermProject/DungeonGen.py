@@ -175,14 +175,30 @@ class BaseDungeon:
             "d": (1, 0)
         }
         
+    def initializeDungeon(self, newDungeon):
+        self.dungeon = newDungeon
+        self.initializePlayerPosition()
+        self.updateCloudedArea()
+
+    def initializePlayerPosition(self):
+        # assigns the player position to a valid coordinate so i dont crash out
+        ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
+        correctY, correctX = self.dungeon.getRandomGridSpawnPoint()
+        self.playerGrid[0] = correctY
+        self.playerGrid[1] = correctX
+        self.app.player.teleportPlayer((self.playerGrid[1] * ts,self.playerGrid[0] * ts ))
 
     def keyPressedLogic(self, key):
         if not self.enabled: return
         if not key in self.movementKeyMap: return 
         ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
         # reverse it bc the movementKey Map is x, y
-        self.playerGrid[0] += self.movementKeyMap[key][1]
-        self.playerGrid[1] += self.movementKeyMap[key][0]
+        newY = self.playerGrid[0] + self.movementKeyMap[key][1]
+        newX = self.playerGrid[1] + self.movementKeyMap[key][0]
+
+        if self.dungeon.isWallAtCoordinate(newY,newX): return
+        self.playerGrid[0] = newY
+        self.playerGrid[1] = newX
         self.app.player.teleportPlayer((self.playerGrid[1] * ts,self.playerGrid[0] * ts ))
         self.mainExploreLogic()
 
@@ -190,6 +206,7 @@ class BaseDungeon:
     def mainExploreLogic(self):
 
         yCoord, xCoord = self.playerGrid[0], self.playerGrid[1]
+
         exploreResult = self.explorePath(yCoord,xCoord)
 
         if exploreResult == "NewTile":
@@ -356,6 +373,7 @@ class DungeonGenerator:
         self.root = None
         self.rooms = []
         self.walkableTiles = []
+        self.voidTiles = set()
         self.app = app
 
     def recursivelySplit(self, node, depth):
@@ -478,6 +496,7 @@ class DungeonGenerator:
         for y, x in voidsToBecomeWalls:
             self.grid[y][x] = 2
 
+
     def generate(self):
         self.root = Node(0, 0, self.gridHeight, self.gridWidth)
         self.recursivelySplit(self.root, 0)
@@ -595,6 +614,32 @@ class DungeonGenerator:
 
     #________________GLOBAL FUNCTIONS______________________
 
+    def isPositionValid(self, entity, newPosition=None):
+        # this is assuming the align of the entity drawing is centered btw. 
+        posX, posY = newPosition if newPosition is not None else entity.position
+        
+        hitboxWidth = entity.hitboxSize["width"]
+        hitboxHeight = entity.hitboxSize["height"]
+
+        left = posX - hitboxWidth / 2
+        right = posX + hitboxWidth / 2
+        top = posY - hitboxHeight / 2
+        bottom = posY + hitboxHeight / 2
+        
+        gridCorners = {
+            self.positionToGridCoordinates(top, left),
+            self.positionToGridCoordinates(top, right),
+
+            self.positionToGridCoordinates(bottom, left),
+            self.positionToGridCoordinates(bottom, right)
+        }
+
+        for gridY, gridX in gridCorners:
+            if self.isVoidAtCoordinate(gridY, gridX):
+                return False
+                
+        return True
+
     def positionToGridCoordinates(self, y, x):
         # this will take in a tuple representing the position and return the grid coordinate equivalent
         ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
@@ -613,18 +658,30 @@ class DungeonGenerator:
         tileType = tileMap.get(self.gridTypeAtCoordinate(y, x), None)
         return tileType in ["defaultVoid", "defaultWall"]
     
+    def isVoidAtCoordinate(self, y, x):
+        # will check if the coordinate is a void and will be used for collision detection 
+        if not (0 <= y < len(self.grid)): return True
+        if not (0 <= x < len(self.grid[0])): return True
+        return self.grid[y][x] == 1
+    
     def getRandomSpawnPoint(self):
         # will find a random valid spawn point for an entity to spawn on.
         # it returns stuff in pixels, not 2d list coordinates
-        if not self.walkableTiles: return (0, 0)
 
-        gridY, gridX = random.choice(self.walkableTiles)
+        gridY, gridX = self.getRandomGridSpawnPoint()
+
         ts = Config.STATIC_INFO["DungeonConfig"]["tileSize"]
 
         xPixel = (gridX * ts) + (ts // 2)
         yPixel = (gridY * ts) + (ts // 2)
 
         return (xPixel, yPixel)
+    
+    def getRandomGridSpawnPoint(self):
+        if not self.walkableTiles: return (0,0)
+
+        gridY, gridX = random.choice(self.walkableTiles)
+        return gridY, gridX
 
 
 

@@ -12,6 +12,7 @@ class Sword:
 
         self.id = uuid.uuid4()
 
+        self.equipped = False
         self.app = app
         self.type = "sword"
 
@@ -35,10 +36,17 @@ class Sword:
 
         self.animationController.addAnimToStack("default")
 
-        self.hitboxSize = {
+        self.visualHitboxSize = {
             "width": 2 * 12,
             "height": 3 * 12
         }
+
+        self.hitboxSize = {
+            "width": 50,
+            "height": 70
+        }
+
+        self.app.allEntities["nonLiving"].add(self)
 
     def __eq__(self, other):
         if not isinstance(other, Sword): return False
@@ -71,8 +79,13 @@ class Sword:
         self.mousePosition[0] = mouseX
         self.mousePosition[1] = mouseY
 
+    def cleanUp(self):
+        if self in self.allEntities["nonLiving"]:
+            self.app.gcEntities.append(self)
+
 
     def runLogic(self):
+        if not self.equipped: return 
         self.animationController.updateAnimation(self.app)
 
         deltaX = self.lastMousePosition[0] - self.mousePosition[0]
@@ -101,6 +114,7 @@ class Sword:
 
     def draw(self):
         # make sure to update this soon.
+        if not self.equipped: return 
         animationFrame = self.animationController.getAnimationFrame(self.app)
 
         if animationFrame == None:
@@ -113,8 +127,8 @@ class Sword:
             self.position[0],
             self.position[1],
             align = "center",
-            width = self.hitboxSize["width"],
-            height = self.hitboxSize["height"],
+            width = self.visualHitboxSize["width"],
+            height = self.visualHitboxSize["height"],
             rotateAngle = 90 + math.degrees(self.swordAngle)
         )
 

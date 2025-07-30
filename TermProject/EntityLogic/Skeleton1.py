@@ -38,6 +38,11 @@ class Skeleton:
             SpriteAnimations.spriteAnimations["skeleton"], 
             SpriteAnimations.animationSettings["skeleton"]
         )
+        self.visualHitboxSize = {
+            "width": 50,
+            "height": 70
+        }
+
         self.hitboxSize = {
             "width": 50,
             "height": 70
@@ -159,6 +164,6 @@ class Skeleton:
             self.position[0],
             self.position[1],
             align = "center",
-            width = self.hitboxSize["width"],
-            height = self.hitboxSize["height"]
+            width = self.visualHitboxSize["width"],
+            height = self.visualHitboxSize["height"]
         )

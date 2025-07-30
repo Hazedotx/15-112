@@ -33,26 +33,6 @@ def onAppStart(app):
         "totalTicks": 0
     }
 
-    app.dungeonManager = DungeonGen.DungeonManager(app)
-
-    baseDungeonGenerator = DungeonGen.DungeonGenerator(
-        app,
-        Config.STATIC_INFO["DungeonConfig"]["gridHeight"],
-        Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
-    )
-
-    baseDungeonGenerator.generate()
-    baseDungeonGenerator.formatDungeon()
-    baseDungeonGenerator.convertDungeonToImage()
-
-    app.dungeonManager.baseDungeon.dungeon = baseDungeonGenerator
-    app.dungeonManager.enableBaseDungeon()
-    app.dungeonManager.baseDungeon.updateCloudedArea()
-
-    app.loadingScreen = LoadingScreen.LoadingScreenManager(app)
-
-    
-
     app.allEntities = { #entities are anything which have custom logic/behavior built into them.
         "enemies": set(),
         "players": set(),
@@ -66,11 +46,30 @@ def onAppStart(app):
     }
 
     app.player = Player.Player(app)
-    #app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
-    app.playerSword = Sword.Sword(app)
+    app.player.addItemToHotbar(Sword.Sword(app))
 
-    app.allEntities["players"].add(app.player)
-    app.allEntities["nonLiving"].add(app.playerSword)
+    app.dungeonManager = DungeonGen.DungeonManager(app)
+
+    baseDungeonGenerator = DungeonGen.DungeonGenerator(
+        app,
+        Config.STATIC_INFO["DungeonConfig"]["gridHeight"],
+        Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
+    )
+
+    baseDungeonGenerator.generate()
+    baseDungeonGenerator.formatDungeon()
+    baseDungeonGenerator.convertDungeonToImage()
+
+    app.dungeonManager.baseDungeon.initializeDungeon(baseDungeonGenerator)
+    app.dungeonManager.enableBaseDungeon()
+
+
+    app.loadingScreen = LoadingScreen.LoadingScreenManager(app)
+
+
+
+    
+    #app.skeleton = Skeleton1.Skeleton(app, [app.width/2 - 150, app.height/2])
 
     applySettings(app)
 

@@ -23,6 +23,12 @@ class Player:
         self.health = 100
         self.maxHealth = 100
 
+        self.playerHotbar = [] # this will be the player inventory
+        self.currentItem = None
+        self.currentItemIndex = -1
+
+        self.app.allEntities["players"].add(self)
+
         self.animationController = SpriteAnimations.AnimationController(SpriteAnimations.spriteAnimations["player"], SpriteAnimations.animationSettings["player"])
 
         # adding MKM here incase i have an enemy which disorients the player
@@ -35,10 +41,17 @@ class Player:
 
         self.movementSpeed = 120
 
-        self.hitboxSize = {
+        self.visualHitboxSize = {
             "width": 50,
             "height": 70
         }
+
+        self.hitboxSize = {
+            "width": 50 * 1,
+            "height": 70 * 1
+        }
+
+
 
         self.animationInfo = SpriteAnimations
 
@@ -57,16 +70,33 @@ class Player:
         # will also update the player state "isMoving"
         speedRatio = (1 / self.app.stepsPerSecond) * self.movementSpeed
 
+        dx = 0
+        dy = 0
+
         for key in keys:
             if key in self.MOVEMENT_KEY_MAP:
-                self.position[0] += self.MOVEMENT_KEY_MAP[key][0] * speedRatio
-                self.position[1] += self.MOVEMENT_KEY_MAP[key][1] * speedRatio
+                dx += self.MOVEMENT_KEY_MAP[key][0]
+                dy += self.MOVEMENT_KEY_MAP[key][1]
+
+        newX, newY = self.position[0] + dx * speedRatio, self.position[1] + dy * speedRatio
+        dungeonArena = self.app.dungeonManager.activeDungeonArena
+
+        if dungeonArena != None and dungeonArena.enabled == True and dungeonArena.dungeon != None:
+            if dungeonArena.dungeon.isPositionValid(self, (newX, newY)):
+                self.position[0] = newX
+                self.position[1] = newY
+            elif dungeonArena.dungeon.isPositionValid(self, (self.position[0], newY)):
+                self.position[1] = newY
+            elif dungeonArena.dungeon.isPositionValid(self, (newX, self.position[1])):
+                self.position[0] = newX
+
+
 
     def teleportPlayer(self, newPosition):
         # will set the players position to a newPosition.
 
-        self.position[0] = newPosition[0] + self.hitboxSize["width"] / 2 - 7 # - 7 is bc of the non visible hitbox increasing the size of the width so it looks off
-        self.position[1] = newPosition[1] 
+        self.position[0] = newPosition[0] + self.visualHitboxSize["width"] / 2 - 7 # - 7 is bc of the non visible hitbox increasing the size of the width so it looks off
+        self.position[1] = newPosition[1]
 
     def changePlayerState(self, newState):
         if newState == "InitalizePlayer":
@@ -75,6 +105,41 @@ class Player:
             self.movementSpeed = 120
         elif newState == "ArenaFinished":
             self.movementSpeed = 0
+
+    def equipItem(self, itemIndex):
+        '''
+        item index represents the index in the inventory
+        '''
+
+        listIndex = itemIndex - 1
+
+        if not (0 <= listIndex < len(self.playerHotbar)):
+            return 
+        
+        if self.currentItemIndex == itemIndex:
+            if self.currentItem != None:
+                self.currentItem.equipped = False
+            self.currentItem = None
+            self.currentItemIndex = -1
+        else:
+            
+            if self.currentItem != None:
+                self.currentItem.equipped = False
+
+            newItem = self.playerHotbar[listIndex]
+            newItem.equipped = True
+
+            self.currentItemIndex = itemIndex
+            self.currentItem = newItem
+
+
+    def addItemToHotbar(self, item):
+        self.playerHotbar.append(item)
+
+    def removeItemFromHotbar(self, item):
+        item.cleanUp()
+        index = self.playerHotbar.remove(item)
+
 
     def draw(self):
         # make sure to update this soon.
@@ -91,13 +156,16 @@ class Player:
             self.position[0],
             self.position[1],
             align = "center",
-            width = self.hitboxSize["width"],
-            height = self.hitboxSize["height"]
+            width = self.visualHitboxSize["width"],
+            height = self.visualHitboxSize["height"]
         )
 
         self.HealthBar.drawHp()
     
     def keyPressedLogic(self, key):
+        if not key.isalpha():
+            self.equipItem(int(key))
+
         self.keysPressed.add(key)
 
     def keyReleasedLogic(self, key):
