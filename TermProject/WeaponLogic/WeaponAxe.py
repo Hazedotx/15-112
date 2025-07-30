@@ -7,14 +7,14 @@ import uuid
 import Helper
 
 
-class Sword:
+class Axe:
     def __init__(self, app):
 
         self.id = uuid.uuid4()
 
         self.equipped = False
         self.app = app
-        self.type = "sword"
+        self.type = "Axe"
 
         self.center = self.app.player.position
         self.position = [app.width/2, app.height/2]
@@ -30,8 +30,8 @@ class Sword:
         self.clampRadius = 50 # the radius the sword traces around
 
         self.animationController = SpriteAnimations.AnimationController(
-            SpriteAnimations.spriteAnimations["sword"], 
-            SpriteAnimations.animationSettings["sword"]
+            SpriteAnimations.spriteAnimations["axe"], 
+            SpriteAnimations.animationSettings["axe"]
         )
 
         self.animationController.addAnimToStack("default")
@@ -49,7 +49,7 @@ class Sword:
         self.app.allEntities["nonLiving"].add(self)
 
     def __eq__(self, other):
-        if not isinstance(other, Sword): return False
+        if not isinstance(other, Axe): return False
         return self.id == other.id
     
     def __hash__(self):
@@ -69,9 +69,6 @@ class Sword:
         return hitList
 
     def onMouseMove(self, mouseX, mouseY):
-        # this code will take the last mouse x position and mouse y position, compute the change within the last frame and this frame
-        # it will use that to calculate the speed of the sword. 
-        #if the speed of the sword is fast enough, it will be able to deal damage to enemies.
 
         self.lastMousePosition[0] = self.mousePosition[0]
         self.lastMousePosition[1] = self.mousePosition[1]

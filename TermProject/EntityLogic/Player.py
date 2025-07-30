@@ -134,6 +134,12 @@ class Player:
 
 
     def addItemToHotbar(self, item):
+
+        for existingItem in self.playerHotbar:
+            if existingItem.type == item.type:
+                item.cleanUp()
+                return
+
         self.playerHotbar.append(item)
 
     def removeItemFromHotbar(self, item):

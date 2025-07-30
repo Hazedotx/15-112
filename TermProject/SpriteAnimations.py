@@ -61,7 +61,24 @@ animationSettings = {
             'priority': 1,
             'framesPerSecond': 1
         }
-    }
+    },
+
+    "axe": {
+        "default": {
+            'loops': True,
+            'priority': 1,
+            'framesPerSecond': 1
+        }
+    },
+
+    "bighammer": {
+        "default": {
+            'loops': True,
+            'priority': 1,
+            'framesPerSecond': 1
+        }
+    },
+
 
 }
 

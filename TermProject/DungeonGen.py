@@ -8,6 +8,9 @@ import os
 import LoadingScreen
 from EntityLogic import Skeleton1 as Skeleton1
 
+from WeaponLogic import BigHammer as BigHammer
+from WeaponLogic import WeaponAxe as WeaponAxe
+
 tileMap = {
     0: "defaultFloor",
     1: "defaultVoid",
@@ -41,7 +44,10 @@ tileMap = {
 
     28: "easy_difficulty_dungeon",
     29: "medium_difficulty_dungeon",
-    30: "max_difficulty_dungeon"
+    30: "max_difficulty_dungeon",
+
+    31: "weaponAxe",
+    32: "weaponBigHammer"
 }
 
 drawOrder = [
@@ -235,7 +241,7 @@ class BaseDungeon:
             return "NewTile"
         return "AlreadyDiscovered"
 
-    def checkForAction(self, y, x):
+    def checkForAction(self, y, x): #ACTION STUFF---------------------------------------------------------------------
         if not self.enabled: return
 
         randomNumber = random.randint(1,10)
@@ -245,8 +251,17 @@ class BaseDungeon:
             difficultyLevel = random.randint(1,3)
             self.discoveredActionMap[(y, x)] = difficultyPng[difficultyLevel - 1]
             return "DungeonArena", {"Level": difficultyLevel}
+        elif randomNumber == 2: #
+            self.discoveredActionMap[(y, x)] = 32 #BigHammer
+            self.app.player.addItemToHotbar(BigHammer.BigHammer(self.app))
+            return "BigHammer", {}
+        elif randomNumber == 3:
+            self.discoveredActionMap[(y, x)] = 31 #weaponAxe
+            self.app.player.addItemToHotbar(WeaponAxe.Axe(self.app))
+            return "WeaponAxe", {}  
+        
+        return "Nothing", {}
 
-        return None, None
 
     def checkWinCondition(self):
         if not self.enabled: return
