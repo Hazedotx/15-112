@@ -63,9 +63,9 @@ drawOrder = [
     26
 ]
 
-# the dungeon generation LOGIC(not code) made with the help of chast gpt bc i didnt even know this was a thing. here is the prompt I inputted:
+# the dungeon generation LOGIC(not code) made with the help of chat gpt bc i didnt even know this was a thing. here is the prompt I inputted:
 # "since i want to create bsp dungeon generator, guide me through the entire logical proccess."
-# it just explained me all the logic steps i needed and thats how i got this foundation
+# it just explained me all the logic steps + psuedo code and thats how i got this foundation
 
 class Node:
     def __init__(self, y, x, height, width):
@@ -172,6 +172,7 @@ class BaseDungeon:
         self.cloudImage = None
         self.discoveredActionMap = {}
         self.discoveredMap = set()
+        self.allDiscoverableAreas = set()
         self.playerGrid = [3, 3] # [y, x]
 
         self.movementKeyMap = {
@@ -185,6 +186,13 @@ class BaseDungeon:
         self.dungeon = newDungeon
         self.initializePlayerPosition()
         self.updateCloudedArea()
+        self.initalizeDiscoverableAreas()
+
+    def initalizeDiscoverableAreas(self):
+        for y in range(len(self.dungeon.grid)):
+            for x in range(len(self.dungeon.grid[0])):
+                if not self.dungeon.isWallAtCoordinate(y,x):
+                    self.allDiscoverableAreas.add((y, x))
 
     def initializePlayerPosition(self):
         # assigns the player position to a valid coordinate so i dont crash out
@@ -215,6 +223,9 @@ class BaseDungeon:
 
         exploreResult = self.explorePath(yCoord,xCoord)
 
+        if self.checkWinCondition():
+            return True
+
         if exploreResult == "NewTile":
             actionType, actionInfo = self.checkForAction(yCoord, xCoord)
             self.updateCloudedArea()
@@ -244,13 +255,13 @@ class BaseDungeon:
     def checkForAction(self, y, x): #ACTION STUFF---------------------------------------------------------------------
         if not self.enabled: return
 
-        randomNumber = random.randint(1,10)
+        randomNumber = random.randint(1,50)
 
         if randomNumber == 1:
             difficultyPng = [28, 29, 30]
             difficultyLevel = random.randint(1,3)
             self.discoveredActionMap[(y, x)] = difficultyPng[difficultyLevel - 1]
-            return "DungeonArena", {"Level": difficultyLevel}
+            #return "DungeonArena", {"Level": difficultyLevel}
         elif randomNumber == 2: #
             self.discoveredActionMap[(y, x)] = 32 #BigHammer
             self.app.player.addItemToHotbar(BigHammer.BigHammer(self.app))
@@ -265,7 +276,14 @@ class BaseDungeon:
 
     def checkWinCondition(self):
         if not self.enabled: return
-        pass
+
+        if len(self.allDiscoverableAreas) == len(self.discoveredMap):
+            print("You won the game!")
+            self.app.loadingScreen.startLoadingScreen(f"You navigated the entire dungeon and successfully cleared it! You have beat the game.", 10000000000)
+            return True
+        return False
+            
+
 
     def updateCloudedArea(self):
         if not self.dungeon: return

@@ -12,7 +12,7 @@ class LoadingScreenManager:
         self.onComplete = None # this is gonna be a callback ;)
         self.onCompleteParams = None # this will be sent through the callback
 
-    def startLoadingScreen(self, message, duration, callback, callbackParams = []):
+    def startLoadingScreen(self, message, duration, callback = None, callbackParams = []):
         '''
         duration is in seconds.
         callback is for when the loading screen is done

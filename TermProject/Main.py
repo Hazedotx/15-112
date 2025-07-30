@@ -50,10 +50,25 @@ def onAppStart(app):
 
     app.dungeonManager = DungeonGen.DungeonManager(app)
 
+    difficulty = Config.SETTINGS["difficulty"]
+    maxMapSizeX = Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
+    maxMapSizeY = Config.STATIC_INFO["DungeonConfig"]["gridHeight"]
+
+    if difficulty == "easy":
+        mapSizeMultiplier = 1
+    elif difficulty == "normal":
+        mapSizeMultiplier = 2
+    elif difficulty == "hard":
+        mapSizeMultiplier = 4
+
+    defaultMapSize = 10 
+
     baseDungeonGenerator = DungeonGen.DungeonGenerator(
         app,
-        Config.STATIC_INFO["DungeonConfig"]["gridHeight"],
-        Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
+        min(defaultMapSize * mapSizeMultiplier, maxMapSizeY),
+        min(defaultMapSize * mapSizeMultiplier, maxMapSizeX)
+        #Config.STATIC_INFO["DungeonConfig"]["gridHeight"],
+        #Config.STATIC_INFO["DungeonConfig"]["gridWidth"]
     )
 
     baseDungeonGenerator.generate()
@@ -96,7 +111,7 @@ def updateEntities(app, functionName, Params = None):
     
 def redrawAll(app):
 
-    drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "grey")
+    drawRect(app.width/2, app.height/2, app.width, app.height, align = "center", fill = "black")
 
     #drawRect(app.player.position[0],app.player.position[1], app.player.playerHitboxSize["width"],app.player.playerHitboxSize["height"], fill = None, border = "black", align = "center")
     #app.player.drawPlayer()

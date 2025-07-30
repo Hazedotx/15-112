@@ -25,7 +25,7 @@ class BigHammer:
         self.mousePosition = [app.width/2, app.height/2]
         self.lastMousePosition = [app.width/2, app.height/2]
 
-        self.attackDamage = 5
+        self.attackDamage = 100
         self.swordSpeed = 500 # has to be going faster than 10 __/s in order for it do deal damage to enemies
         self.clampRadius = 50 # the radius the sword traces around
 

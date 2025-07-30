@@ -24,5 +24,5 @@ SETTINGS = {
     "fullScreenEnabled": False,
     "fps": 60,
     "volume": 0.8,
-    "difficulty": "normal"
+    "difficulty": "hard"
 }
