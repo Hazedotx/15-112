@@ -50,6 +50,8 @@ tileMap = {
     32: "weaponBigHammer"
 }
 
+# since i am doing alot with my dungeon generation and I am using a custom tileset, making a 2d game look kind of decent is pretty hard.
+# for this reason, i had to make it so that i could have multiple images layered ontop of eachother dependent on priority to give the game a semi-realistic feel
 drawOrder = [
     #black background
     27,

@@ -142,6 +142,7 @@ spriteAnimations = loadAnimations("TermProject/SpriteAnimations")
 #________________________________________ANIMATION CONTROLLER OOP_____________________________________________
 
 class AnimationController:
+    # Animation controller inspired by some of the stuff I have made in roblox studio.
     def __init__(self, animations, animationSettings):
         self.animationStack = []
         self.animations = animations
@@ -150,20 +151,27 @@ class AnimationController:
         self.frameCounter  = 0
         self.currentAnimation = None
     
-    def _getPriority(self, animationObject):
+    def getPriority(self, animationObject):
         animationName = animationObject['name']
+
         if animationName in self.animationSettings:
+
             return self.animationSettings[animationName]["priority"]
         else:
             return defaultAnimationSettings["priority"]
 
     def sortAnimations(self):
-        self.animationStack.sort(key=self._getPriority, reverse=False)
+        # sorts the animation based off the priority
+        self.animationStack.sort(key=self.getPriority, reverse=False)
 
     def cancelAnimation(self, animationName):
+        # removes the animation from the animation stack 
         self.animationStack = [anim for anim in self.animationStack if anim['name'] != animationName]
 
+
+
     def getTopAnimation(self):
+        #returns the highest priority animation
         return self.animationStack[-1] if self.animationStack else None
 
     def cancelRunningAnimation(self):
@@ -189,13 +197,15 @@ class AnimationController:
         })
         self.sortAnimations()
 
-    def _resetForNewAnimation(self, newAnimation):
+    def resetForNewAnimation(self, newAnimation):
+        # resets the animation info 
         self.currentAnimation = newAnimation
         self.currentFrame = 0
         self.frameCounter = 0
 
     def getAnimationFrame(self, app):
-        if self.currentAnimation is None:
+        # gets the current animation frame 
+        if self.currentAnimation == None:
             return None
         
         animationName = self.currentAnimation['name']
@@ -207,6 +217,7 @@ class AnimationController:
             return animationFrames[self.currentFrame]
         
     def updateAnimation(self, app):
+        # updates the current animation that is running. 
         currentHighest = self.getTopAnimation()
 
         if not currentHighest:
@@ -233,6 +244,7 @@ class AnimationController:
                 if staticAnimData.get("loops", False):
                     self.currentFrame = 0
                 else:
+                    # run the callback in order to clean up anything the sprite has after the animation finifhes
                     callback = self.currentAnimation.get('onComplete')
                     if callback:
                         callback()
