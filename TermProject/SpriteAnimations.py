@@ -225,7 +225,7 @@ class AnimationController:
             return
 
         if self.currentAnimation != currentHighest:
-            self._resetForNewAnimation(currentHighest)
+            self.resetForNewAnimation(currentHighest)
 
         currentAnimationName = self.currentAnimation['name']
         staticAnimData = self.animations[currentAnimationName]
