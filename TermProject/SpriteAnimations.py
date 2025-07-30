@@ -104,6 +104,8 @@ def loadAnimations(rootFolder):
     """
 
 
+    #I used chat gpt to figure out how to navigate folders and stuff. I look at the os libary as well
+
     animations = {}
 
     for dirPath, dirNames, fileNames in os.walk(rootFolder):
@@ -119,8 +121,6 @@ def loadAnimations(rootFolder):
             fullPath = os.path.join(dirPath, fileName)
             image = Image.open(fullPath)
             frames.append(image)
-
-        #Logic for building final components.
 
         parentFileName = os.path.basename(os.path.dirname(dirPath)).lower()
         animationInformation = animationSettings[parentFileName][animationName] if animationName in animationSettings[parentFileName] else copy.deepcopy(defaultAnimationSettings)
