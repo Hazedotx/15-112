@@ -263,7 +263,7 @@ class BaseDungeon:
             difficultyPng = [28, 29, 30]
             difficultyLevel = random.randint(1,3)
             self.discoveredActionMap[(y, x)] = difficultyPng[difficultyLevel - 1]
-            #return "DungeonArena", {"Level": difficultyLevel}
+            return "DungeonArena", {"Level": difficultyLevel}
         elif randomNumber == 2: #
             self.discoveredActionMap[(y, x)] = 32 #BigHammer
             self.app.player.addItemToHotbar(BigHammer.BigHammer(self.app))
